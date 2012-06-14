@@ -21,6 +21,12 @@ devices = node[:ceph][:devices]
 Chef::Log.info "Devices: #{devices.join(',')}"
 
 devices.each do |device|
+  execute "make xfs filesystem on #{device}" do
+    command "mkfs.xfs -f #{device}"
+    ## test if the FS is already an XFS file system.
+    not_if "xfs_admin -l #{device}"
+  end
+
   # /var/lib/ceph/$type/$cluster-$id
   # chicken-egg here - I don't know the index to mount this on - we'll go with the UUID for now (sorry TV)...  
   
@@ -38,7 +44,8 @@ devices.each do |device|
   
   mount osd_path do 
     device device
-    fstype "btrfs"
+    fstype "xfs"
+    options "noatime"
     action [:enable, :mount]
   end
     
