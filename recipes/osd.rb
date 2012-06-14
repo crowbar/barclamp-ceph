@@ -17,7 +17,7 @@ c = ceph_keyring "client.admin" do
 end
 
 # search for possible OSDs, labeled 
-devices = %x(blkid -t LABEL="#{node[:ceph][:clustername]}.ceph" -c /dev/null -o device).split("\n")
+devices = node[:ceph][:devices]
 Chef::Log.info "Devices: #{devices.join(',')}"
 
 devices.each do |device|
