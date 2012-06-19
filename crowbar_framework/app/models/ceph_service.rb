@@ -27,4 +27,17 @@ class CephService < ServiceObject
     base
   end
 
+  def apply_role_pre_chef_call(old_role, role, all_nodes)
+    @logger.debug("ceph apply_role_pre_chef_call: entering #{all_nodes.inspect}")
+    master_mon = role.override_attributes["ceph"]["elements"]["ceph-mon-master"]
+    monitors = role.override_attributes["ceph"]["elements"]["ceph-mon"]
+    if monitors.nil?
+      monitors = master_mon
+    else
+      monitors << master_mon.first
+    end
+    role.override_attributes[:ceph][:monitors] = monitors
+    role.save
+
+  end
 end
