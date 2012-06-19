@@ -7,10 +7,7 @@ action :create do
     action :create
   end
 
-  if @new_resource.index == 0
-    # we are the first mon - lets be the "master" who will hold the initial monmap
-    node.set[:ceph][:master] = true
-
+  if node[:ceph][:master]
     ceph_keyring "client.admin" do
       action [:create, :add, :store]
       not_if "test -e /etc/ceph/client.admin.keyring"
@@ -21,13 +18,16 @@ end
 action :initialize do 
   i = @new_resource.index
 
-  if i == 0
+  Chef::Log.info("mon::initialize")
+  if node[:ceph][:master]
+    Chef::Log.info("mon::initialize master")
     ceph_keyring "mon.#{i}" do
       action [:create, :add, :store]
       keyname "mon." # WTF?
     end
   else
     ceph_keyring "mon.#{i}" do
+      Chef::Log.info("mon::initialize non master")
       secret get_master_mon_secret
       action [:create, :add, :store]
       keyname "mon." # WTF?
@@ -54,7 +54,7 @@ action :initialize do
   # end
 
   # either we are the first mon (master), either we are a backup mon (not master)
-  if i == 0
+  if node[:ceph][:master]
     execute "CEPH MASTER INIT: Preparing the monmap" do
       command "/sbin/mkcephfs -d /tmp/mon-init -c /etc/ceph/ceph.conf --prepare-monmap"
     end

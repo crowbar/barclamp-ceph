@@ -1,7 +1,7 @@
 # initialize ceph nodes
 
 # we need a master, and our mon-cluster needs to work...
-master_mons = search("node", "ceph_master:true AND ceph_clustername:#{node['ceph']['clustername']} AND chef_environment:#{node.chef_environment}", "X_CHEF_id_CHEF_X asc") || []
+master_mons = search("node", "roles:ceph-mon-master AND ceph_clustername:#{node['ceph']['clustername']} AND chef_environment:#{node.chef_environment}", "X_CHEF_id_CHEF_X asc") || []
 
 if master_mons.size == 0
   Chef::Log.error("No master server found in ceph cluster #{node[:ceph][:clustername]} - not initializing/configuring OSDs")
@@ -11,6 +11,7 @@ end
 include_recipe "ceph::default"
 package "util-linux"
 
+node[:ceph][:osd][:enabled] = true
 c = ceph_keyring "client.admin" do
   secret get_master_secret
   action [:create, :add] 
