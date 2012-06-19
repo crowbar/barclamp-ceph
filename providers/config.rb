@@ -13,7 +13,9 @@ action :create do
           variables( 
             :mdss => mdss,
             :osds => osds,
-            :extra_osds_data => new_resource.osd_data
+            :extra_osds_data => new_resource.osd_data,
+            :monitors => new_resource.monitors,
+            :clustername => new_resource.clustername
           )
   end
 end

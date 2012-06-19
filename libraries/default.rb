@@ -40,3 +40,23 @@ def get_master_mon_fsid
   
   master[:ceph][:monfsid]
 end
+
+def is_crowbar?()
+  return defined?(Chef::Recipe::Barclamp) != nil
+end
+
+def get_mon_nodes()
+  if is_crowbar?
+    mon_nodes = []
+    mon_names = node['ceph']['monitors']
+    mon_names.each do |n|
+      monitor = {}
+      search(:node, "name:#{n}") do |match|
+        monitor[:address] = Chef::Recipe::Barclamp::Inventory.get_network_by_type(match, "admin").address
+        monitor[:name] = match[:hostname]
+      end
+      mon_nodes << monitor
+    end
+  end
+  return mon_nodes
+end
