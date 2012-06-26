@@ -32,8 +32,11 @@ devices.each do |device|
   # chicken-egg here - I don't know the index to mount this on - we'll go with the UUID for now (sorry TV)...  
   
   # /var/lib/ceph/$type/$cluster-$uuid ($id is unknown)
-  uuid = %x(blkid -p -s UUID -o value #{device}).strip
-  osd_path = "/var/lib/ceph/osd/#{node[:ceph][:clustername]}-#{uuid}"
+
+  # why not use the serial # of the drive? )
+  id_ser = %x( /sbin/udevadm info --query=env --name #{device} 2>/dev/null | grep ID_SERIAL= )
+  id = id_ser.split('=')[1].strip 
+  osd_path = "/var/lib/ceph/osd/#{node[:ceph][:clustername]}-#{id}" 
 
   directory osd_path do
     owner "root"
@@ -50,13 +53,13 @@ devices.each do |device|
     action [:enable, :mount]
   end
     
-  ceph_osd "Initializing new osd on #{device} - #{uuid}" do
+  ceph_osd "Initializing new osd on #{device} - #{id}" do
     path osd_path
     action [:initialize]
     not_if "test -e #{osd_path}/whoami"
   end
 
-  ceph_osd "Starting the osd from #{uuid}" do
+  ceph_osd "Starting the osd from #{id}" do
     path osd_path
     action [:start]
   end
