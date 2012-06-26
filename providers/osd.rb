@@ -72,10 +72,11 @@ end
 action :start do
   osd_path = @new_resource.path
   index = get_osd_index osd_path
-
+  mon = node[:ceph][:monitors][0]
+  Chef::Log.info("Monitor to start OSD with: #{mon}")
   service "osd.#{index}" do
     supports :restart => true
-    start_command "/etc/init.d/ceph -c /etc/ceph/osd.#{index}.conf start osd.#{index}"
+    start_command "/usr/bin/ceph-osd -i #{index} -c /etc/ceph/osd.#{index}.conf -m #{mon}"
     action [:start]
   end
 end
