@@ -4,9 +4,7 @@ action :create do
   search_myself = " OR hostname:#{node[:hostname]}"
 
   mdss = search("node", "(ceph_mds_enabled:true" + (@new_resource.i_am_a_mds ? search_myself : "") + ")" + search_restrictions, "X_CHEF_id_CHEF_X asc")
-  osd_names = node["ceph"]["elements"]["ceph-store"] || [] 
   osds = []
-  osd_names.each { |osd| osds += search(:node, "name:#{osd}") }
 
   template new_resource.config_file do
           source          "ceph.conf"
