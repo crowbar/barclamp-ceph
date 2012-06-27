@@ -51,7 +51,10 @@ action :initialize do
     action :run
   end
 
-  ceph_config "/etc/ceph/osd.#{osd_index}.conf" do
+  mon_nodes = get_mon_nodes()
+  Chef::Log.info("Monitors: #{mon_nodes.inspect}")
+  ceph_config "/etc/ceph/ceph.conf" do
+    monitors mon_nodes
     osd_data [{:index => osd_index,
                :journal => journal_location,
                :journal_size => 250,
@@ -76,7 +79,8 @@ action :start do
   Chef::Log.info("Monitor to start OSD with: #{mon}")
   service "osd.#{index}" do
     supports :restart => true
-    start_command "/usr/bin/ceph-osd -i #{index} -c /etc/ceph/osd.#{index}.conf -m #{mon}"
+    #start_command "/usr/bin/ceph-osd -i #{index} -c /etc/ceph/osd.#{index}.conf -m #{mon}"
+    start_command "/usr/bin/ceph-osd -i #{index}"
     action [:start]
   end
 end
