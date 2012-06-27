@@ -60,3 +60,15 @@ def get_mon_nodes()
   end
   return mon_nodes
 end
+
+def get_osd_path(device)
+  id_ser = %x( /sbin/udevadm info --query=env --name #{device} 2>/dev/null | grep ID_SERIAL= )
+  id = id_ser.split('=')[1].strip
+  osd_path = "/var/lib/ceph/osd/#{node[:ceph][:clustername]}-#{id}"
+  return osd_path
+end
+
+
+def get_osds()
+#  TODO
+end
