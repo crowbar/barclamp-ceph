@@ -1,5 +1,9 @@
 def get_osd_index path
-  osd_index = File.read("/#{path}/whoami").to_i
+  begin
+    osd_index = File.read("/#{path}/whoami").to_i
+  rescue
+    0
+  end
 end
 
 def get_master_secret
@@ -61,6 +65,7 @@ def get_mon_nodes()
   return mon_nodes
 end
 
+#FIXME: I need a database store for this
 def get_osd_path(device)
   id_ser = %x( /sbin/udevadm info --query=env --name #{device} 2>/dev/null | grep ID_SERIAL= )
   id = id_ser.split('=')[1].strip
@@ -69,6 +74,23 @@ def get_osd_path(device)
 end
 
 
-def get_osds()
-#  TODO
+def get_local_osds()
+  if is_crowbar?
+    devices = node[:ceph][:devices]
+    osds = []
+    devices.each do |device|
+      osd = {}
+      osd[:index] = get_osd_index(get_osd_path(device))
+      osd[:hostname] = %x{hostname}.strip
+      osd[:data] = get_osd_path(device)
+      osd[:journal] = get_osd_path(device) + "/journal"
+      osds << osd
+    end
+  end
+  return osds
+end
+
+
+def get_max_osds()
+  maxosds = %x{ceph osd dump | grep max_osd}.split[1].to_i
 end
