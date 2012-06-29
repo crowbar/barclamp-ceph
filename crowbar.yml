@@ -2,6 +2,8 @@ barclamp:
   name: ceph
   display: Ceph
   version: 0
+  member:
+    - openstack
 
   os_support:
     - ubuntu-10.10
