@@ -3,7 +3,8 @@
 action :initialize do
   b = ruby_block "Determine a new index for the OSD" do
     block do
-      node[:ceph][:last_osd_index] = %x(/usr/bin/ceph osd create).strip.to_i
+#      node[:ceph][:last_osd_index] = %x(/usr/bin/ceph osd create).strip.to_i
+      node[:ceph][:last_osd_index] =  get_max_osds() 
       node.save
     end
     action :nothing
@@ -52,6 +53,15 @@ action :initialize do
   end
 
   mon_nodes = get_mon_nodes()
+  osds = get_local_osds()
+
+  osds += [{:index => osd_index,
+           :journal => journal_location,
+           :journal_size => 250,
+           :data => osd_path}]
+
+  Chef::Log.info("All OSDs up to now: #{osds.inspect}")
+  
   Chef::Log.info("Monitors: #{mon_nodes.inspect}")
   ceph_config "/etc/ceph/ceph.conf" do
     monitors mon_nodes
