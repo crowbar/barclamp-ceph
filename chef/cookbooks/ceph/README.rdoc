@@ -1,0 +1,84 @@
+= DESCRIPTION
+
+This cookbook will configure a set of machines to act as a Ceph cluster. It
+is intended to be as easy as possible to configure, and will take a lot of 
+sane defaults to start with.
+
+Currently, there are some limitations:
+
+* It is only tested on Debian Squeeze 64 bit - but might work on other distro's
+* It depends on the apt-cookbook from Opscode
+* It only configures mons and osds
+
+= CONTENTS
+
+There are LWRPs for MON, OSD, KEYRING and CONFIG (the MDS is present but 
+non-functional).
+
+= USAGE
+
+== General
+
+1. Add this cookbook to your tree, and name it "ceph". We do this as a submodule:
+
+     git submodule add user@host:/where/you/pull/from cookbooks/ceph
+
+2. Upload the cookbook to your chef server.
+
+3. Create a role ("cephcluster"), and set at least this attribute:
+
+    [:ceph][:clustername] - set it to a global identifier for this cluster
+    [:ceph][:mons] - set it to an array of fqdn names for the mons
+
+   Apply this role to all your clusternodes so the attributes are know to each node.
+
+== Monitoring cluster
+
+1. Apply the "ceph::mon" recipe to a monitor node, run chef-client there, it should 
+   become the first monitor, and also the "master" which holds the client.admin secret. 
+
+2. Run ceph::mon recipe on all other nodes which are mons
+
+3. Verify by running "ceph -w" on any mon-node
+
+== Adding OSDs
+
+OSDs are identified by the LABEL that sits on certain partition or drive. Each device that might be used as a OSD should have this label. Format the block devices (either manual or by creating your own chef recipe) and add a label named "{clustername}.ceph".
+
+  mkfs.btrfs -L ceph.ceph /dev/sdb
+  mkfs.btrfs -L ceph.ceph /dev/sdc
+  mkfs.btrfs -L ceph.ceph /dev/sdd
+
+Once done, add the OSD recipe to the node, and run chef-client. The labels will be detected, and the devices will be initialized and started. If the device holds an already initialized osd-structure, it will not re-initialize.
+
+The OSD daemons are normally started.
+
+= IMPROVEMENTS:
+
+This is a work in progress, and anyone is invited to contribute their changes/additions.
+
+If you want to work on this, and don't know where to start: 
+* mds (LWRP)
+* radosgw setup (LWRP)
+* rbd management through a LWRP
+
+Get in touch on IRC wonko (kreynet) or wonko_be (oftc).
+
+= LICENSE and AUTHOR:
+
+Author: Bernard Grymonpon (mailto:bernard@openminds.be)
+Author: Openminds BVBA devops team (mailto:info@openminds.be)
+
+Copyright 2009-2012 Openminds BVBA.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
