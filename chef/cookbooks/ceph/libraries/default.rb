@@ -1,9 +1,13 @@
-def get_osd_index path
-  begin
+def get_osd_index(path)
+  if osd_initialized?(path)
     osd_index = File.read("/#{path}/whoami").to_i
-  rescue
+  else
     0
   end
+end
+
+def osd_initialized?(path)
+  File.exist?("/#{path}/whoami")
 end
 
 def get_master_secret
@@ -79,12 +83,15 @@ def get_local_osds()
     devices = node[:ceph][:devices]
     osds = []
     devices.each do |device|
-      osd = {}
-      osd[:index] = get_osd_index(get_osd_path(device))
-      osd[:hostname] = %x{hostname}.strip
-      osd[:data] = get_osd_path(device)
-      osd[:journal] = get_osd_path(device) + "/journal"
-      osds << osd
+      if osd_initialized?(get_osd_path(device))
+        osd = {}
+        osd[:index] = get_osd_index(get_osd_path(device))
+        osd[:hostname] = %x{hostname}.strip
+        osd[:data] = get_osd_path(device)
+        osd[:journal] = get_osd_path(device) + "/journal"
+        osd[:journal_size] = 250
+        osds << osd
+      end
     end
   end
   return osds
@@ -93,4 +100,8 @@ end
 
 def get_max_osds()
   maxosds = %x{ceph osd dump | grep max_osd}.split[1].to_i
+end
+
+def get_num_running_osds()
+  %x{ceph osd stat}.split[1].to_i
 end
