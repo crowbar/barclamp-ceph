@@ -65,13 +65,11 @@ action :initialize do
   Chef::Log.info("Monitors: #{mon_nodes.inspect}")
   ceph_config "/etc/ceph/ceph.conf" do
     monitors mon_nodes
-    osd_data [{:index => osd_index,
-               :journal => journal_location,
-               :journal_size => 250,
-               :data => osd_path}]
+    osd_data osds
   end
 
   execute "Add one osd to the maxosd" do
+    Chef::Log.info("Increasing maxosds")
     command "ceph osd setmaxosd $(($(ceph osd getmaxosd | cut -d' ' -f3)+1))" # or should we set osd_index + 1?
     action :run
   end
