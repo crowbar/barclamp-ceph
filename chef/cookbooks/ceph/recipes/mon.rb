@@ -23,20 +23,21 @@ end
 if master
   # resize the cluster if needed
 #  number_of_osds = search("node", "ceph_osd_enabled:true AND ceph_clustername:#{node['ceph']['clustername']} AND chef_environment:#{node.chef_environment}", "X_CHEF_id_CHEF_X asc").size
-  number_of_osds = get_max_osds()
+  max_osds = get_max_osds()
+  current_osds = get_num_running_osds()
 
-  if number_of_osds != 0
+  Chef::Log.info("max_osds: #{max_osds}, current_osds: #{current_osds}")
 
-    execute "Set the number of OSDs to #{number_of_osds}" do
-      command "/usr/bin/ceph osd setmaxosd #{number_of_osds + 1}"
+  if max_osds != 0 &&  max_osds <= current_osds
+
+    execute "Set the number of OSDs to #{max_osds+1}" do
+      command "/usr/bin/ceph osd setmaxosd #{max_osds + 1}"
       action :run
-      not_if "ceph osd dump -o - 2>/dev/null | grep 'max_osd #{number_of_osds + 1}'"
     end
 
     execute "Load a new crushmap for all the OSDs" do
-      command "/usr/bin/osdmaptool --createsimple #{number_of_osds} --clobber /tmp/osdmap.junk --export-crush /tmp/crush.new && /usr/bin/ceph osd setcrushmap -i /tmp/crush.new"
+      command "/usr/bin/osdmaptool --createsimple #{max_osds} --clobber /tmp/osdmap.junk --export-crush /tmp/crush.new && /usr/bin/ceph osd setcrushmap -i /tmp/crush.new"
       action :run
-      not_if "ceph osd dump -o - 2>/dev/null | grep 'max_osd #{number_of_osds + 1}'"    
     end
   end
 end
