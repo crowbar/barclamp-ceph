@@ -3,8 +3,7 @@
 action :initialize do
   b = ruby_block "Determine a new index for the OSD" do
     block do
-#      node[:ceph][:last_osd_index] = %x(/usr/bin/ceph osd create).strip.to_i
-      node[:ceph][:last_osd_index] =  get_max_osds() 
+      node[:ceph][:last_osd_index] = %x(/usr/bin/ceph osd create).strip.to_i
       node.save
     end
     action :nothing
@@ -75,7 +74,7 @@ action :initialize do
   end
 
   execute "Add the OSD to the crushmap" do
-    command "/usr/bin/ceph osd crush add #{osd_index} osd.#{osd_index} 1 pool=default rack=#{rack} host=#{host}"
+    command "/usr/bin/ceph osd crush set #{osd_index} osd.#{osd_index} 1 pool=default rack=#{rack} host=#{host}"
     action :run
   end
 end
@@ -87,8 +86,7 @@ action :start do
   Chef::Log.info("Monitor to start OSD with: #{mon}")
   service "osd.#{index}" do
     supports :restart => true
-    #start_command "/usr/bin/ceph-osd -i #{index} -c /etc/ceph/osd.#{index}.conf -m #{mon}"
-    start_command "/usr/bin/ceph-osd -i #{index}"
+    start_command "/etc/init.d/ceph start osd#{index}"
     action [:start]
   end
 end
