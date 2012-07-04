@@ -18,18 +18,14 @@ action :initialize do
 
   Chef::Log.info("Index is #{osd_index}")
 
-  if node[:ceph][:journal_path]
-    journal_location = node[:ceph][:journal_path] + "/journal.#{osd_index}"
+  journal_location = "/var/lib/ceph/osdjournals/jounal.#{osd_index}"
 
-    directory node[:ceph][:journal_path] do
-      owner "root"
-      group "root"
-      mode "0755"
-      recursive true
-      action :create
-    end
-  else
-    journal_location = osd_path + "/journal"
+  directory  "/var/lib/ceph/osdjournals" do
+    owner "root"
+    group "root"
+    mode "0755"
+    recursive true
+    action :create
   end
 
   execute "Extract the monmap" do
