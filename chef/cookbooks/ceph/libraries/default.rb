@@ -69,14 +69,18 @@ def get_mon_nodes()
   return mon_nodes
 end
 
-#FIXME: I need a database store for this
+#FIXME: this needs exception handling, in case of typos in the devices
 def get_osd_path(device)
+  Chef::Log.info("Device to find id: #{device}")
   id_ser = %x( /sbin/udevadm info --query=env --name #{device} 2>/dev/null | grep ID_SERIAL= )
   id = id_ser.split('=')[1].strip
-  osd_path = "/var/lib/ceph/osd/#{node[:ceph][:clustername]}-#{id}"
+
+  id_part = %x{ udevadm info --query=env --name #{device} | grep PART_ENTRY_NUMBER }
+  part = id_part.empty? ? "" : "-#{id_part.split('=')[1].strip}"
+
+  osd_path = "/var/lib/ceph/osd/#{node[:ceph][:clustername]}-#{id}#{part}"
   return osd_path
 end
-
 
 def get_local_osds()
   if is_crowbar?
@@ -96,7 +100,6 @@ def get_local_osds()
   end
   return osds
 end
-
 
 def get_max_osds()
   maxosds = %x{ceph osd dump | grep max_osd}.split[1].to_i
