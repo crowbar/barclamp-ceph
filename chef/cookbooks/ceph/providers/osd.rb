@@ -18,7 +18,7 @@ action :initialize do
 
   Chef::Log.info("Index is #{osd_index}")
 
-  journal_location = "/var/lib/ceph/osdjournals/jounal.#{osd_index}"
+  journal_location = "/var/lib/ceph/osdjournals/journal.#{osd_index}"
 
   directory  "/var/lib/ceph/osdjournals" do
     owner "root"

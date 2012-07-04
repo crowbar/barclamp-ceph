@@ -92,7 +92,7 @@ def get_local_osds()
         osd[:index] = get_osd_index(get_osd_path(device))
         osd[:hostname] = %x{hostname}.strip
         osd[:data] = get_osd_path(device)
-        osd[:journal] = get_osd_path(device) + "/journal"
+        osd[:journal] =  "var/lib/ceph/osdjournals/journal.$id"
         osd[:journal_size] = 250
         osds << osd
       end
