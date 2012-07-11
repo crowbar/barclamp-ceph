@@ -41,9 +41,10 @@ if master
 end
 
 service "mon.#{my_index}" do
+  service_name "ceph"
   supports :restart => true
   start_command "/etc/init.d/ceph start mon.#{my_index}"
   stop_command "/etc/init.d/ceph stop mon.#{my_index}"
   restart_command "/etc/init.d/ceph restart mon.#{my_index}"
-  action [:start]
+  action [:enable, :start]
 end
