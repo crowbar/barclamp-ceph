@@ -1,3 +1,5 @@
+JOURNAL_SIZE = 1024
+
 def get_osd_index(path)
   if osd_initialized?(path)
     osd_index = File.read("/#{path}/whoami").to_i
@@ -56,7 +58,7 @@ end
 def get_mon_nodes()
   if is_crowbar?
     mon_nodes = []
-    mon_names = node['ceph']['monitors']
+    mon_names = node['ceph']['monitors'] || []
     mon_names.each do |n|
       monitor = {}
       search(:node, "name:#{n}") do |match|
@@ -93,7 +95,7 @@ def get_local_osds()
         osd[:hostname] = %x{hostname}.strip
         osd[:data] = get_osd_path(device)
         osd[:journal] =  "/var/lib/ceph/osdjournals/journal.$id"
-        osd[:journal_size] = 250
+        osd[:journal_size] = JOURNAL_SIZE
         osds << osd
       end
     end
