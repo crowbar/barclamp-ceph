@@ -34,7 +34,7 @@ action :initialize do
   end
 
   execute "Create the fs for osd.#{osd_index}" do
-    command "/usr/bin/ceph-osd -i #{osd_index} -c /dev/null --monmap /etc/ceph/monmap --osd-data=#{osd_path} --osd-journal=#{journal_location} --osd-journal-size=250 --mkfs --mkjournal"
+    command "/usr/bin/ceph-osd -i #{osd_index} -c /dev/null --monmap /etc/ceph/monmap --osd-data=#{osd_path} --osd-journal=#{journal_location} --osd-journal-size=#{JOURNAL_SIZE} --mkfs --mkjournal"
     action :run
   end
   
@@ -52,7 +52,7 @@ action :initialize do
 
   osds += [{:index => osd_index,
            :journal => journal_location,
-           :journal_size => 250,
+           :journal_size => JOURNAL_SIZE,
            :data => osd_path}]
 
   Chef::Log.info("All OSDs up to now: #{osds.inspect}")
@@ -81,8 +81,11 @@ action :start do
   mon = node[:ceph][:monitors][0]
   Chef::Log.info("Monitor to start OSD with: #{mon}")
   service "osd.#{index}" do
+    service_name "ceph"
     supports :restart => true
     start_command "/etc/init.d/ceph start osd#{index}"
-    action [:start]
+    stop_command "/etc/init.d/ceph stop osd#{index}"
+    restart_command "/etc/init.d/ceph restart osd#{index}"
+    action [:enable, :start]
   end
 end
