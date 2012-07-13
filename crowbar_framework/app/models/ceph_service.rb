@@ -36,7 +36,7 @@ class CephService < ServiceObject
     else
       monitors << master_mon.first
     end
-    role.override_attributes[:ceph][:monitors] = monitors
+    role.override_attributes["ceph"]["monitors"] = monitors
     role.save
 
   end
