@@ -10,5 +10,7 @@
 #end
 
 %w{ceph}.each do |name|
-  package name
+  package name do
+    action :upgrade
+  end
 end

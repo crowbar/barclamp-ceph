@@ -9,7 +9,9 @@ if master_mons.size == 0
 end
 
 include_recipe "ceph::default"
-package "util-linux"
+package "util-linux" do
+  action :upgrade
+end
 
 node[:ceph][:osd][:enabled] = true
 c = ceph_keyring "client.admin" do
