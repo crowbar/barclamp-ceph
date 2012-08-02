@@ -16,11 +16,11 @@ action :initialize do
   host = @new_resource.host || node[:ceph][:host] || node[:hostname]
   rack = @new_resource.rack || node[:ceph][:rack] || "rack-001"
 
-  Chef::Log.info("Index is #{osd_index}")
+  node.set[:ceph][:osd]["#{osd_index}"] = {"#{@new_resource.device}" => @new_resource.path}
+  journal_location = "/var/lib/ceph/osdjournals/#{osd_index}/journal"
+  node.set[:ceph][:osd]["#{osd_index}"]["journal"] = journal_location
 
-  journal_location = "/var/lib/ceph/osdjournals/journal.#{osd_index}"
-
-  directory  "/var/lib/ceph/osdjournals" do
+  directory  "/var/lib/ceph/osdjournals/#{osd_index}" do
     owner "root"
     group "root"
     mode "0755"
@@ -55,19 +55,18 @@ action :initialize do
            :journal_size => JOURNAL_SIZE,
            :data => osd_path}]
 
-  Chef::Log.info("All OSDs up to now: #{osds.inspect}")
-  
-  Chef::Log.info("Monitors: #{mon_nodes.inspect}")
   ceph_config "/etc/ceph/ceph.conf" do
     monitors mon_nodes
     osd_data osds
   end
 
-  execute "Add one osd to the maxosd" do
-    Chef::Log.info("Increasing maxosds")
-    command "ceph osd setmaxosd $(($(ceph osd getmaxosd | cut -d' ' -f3)+1))" # or should we set osd_index + 1?
-    action :run
-  end
+#FIXME: I'll remove this, because I'm not sure wether it's needed at all
+#  execute "Add one osd to the maxosd if maxosd <= osd_index" do
+#    Chef::Log.info("get_max_osds: #{get_max_osds}, osd_index: #{osd_index}")
+#    command "ceph osd setmaxosd $(($(ceph osd getmaxosd | cut -d' ' -f3)+1))" # or should we set osd_index + 1?
+#    action :run
+#    only_if { get_max_osds() <= get_num_running_osds }
+#  end
 
   execute "Add the OSD to the crushmap" do
     command "/usr/bin/ceph osd crush set #{osd_index} osd.#{osd_index} 1 pool=default rack=#{rack} host=#{host}"
@@ -78,8 +77,7 @@ end
 action :start do
   osd_path = @new_resource.path
   index = get_osd_index osd_path
-  mon = node[:ceph][:monitors][0]
-  Chef::Log.info("Monitor to start OSD with: #{mon}")
+
   service "osd.#{index}" do
     service_name "ceph"
     supports :restart => true

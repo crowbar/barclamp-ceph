@@ -21,6 +21,15 @@ end
 devices = node[:ceph][:devices]
 Chef::Log.info "Devices: #{devices.join(',')}"
 
+wrong_devs = []
+devices.each do |device|
+  next if File.exist?(device)
+  Chef::Log.error("Device #{device} doesn't exist")
+  wrong_devs << device
+end
+
+wrong_devs.each { |wd| devices.delete(wd) }
+
 devices.each do |device|
   execute "make xfs filesystem on #{device}" do
     command "mkfs.xfs -f #{device}"
@@ -32,8 +41,6 @@ devices.each do |device|
   # chicken-egg here - I don't know the index to mount this on - we'll go with the UUID for now (sorry TV)...  
   
   # /var/lib/ceph/$type/$cluster-$uuid ($id is unknown)
-
-  # why not use the serial # of the drive? )
 
   osd_path = get_osd_path(device)
 
@@ -50,10 +57,12 @@ devices.each do |device|
     fstype "xfs"
     options "noatime"
     action [:enable, :mount]
+    not_if mounted
   end
     
   ceph_osd "Initializing new osd on #{device} - #{id}" do
     path osd_path
+    device device
     action [:initialize]
     not_if "test -e #{osd_path}/whoami"
   end

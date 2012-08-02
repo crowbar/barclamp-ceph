@@ -59,6 +59,10 @@ action :initialize do
       command "/sbin/mkcephfs -d /tmp/mon-init -c /etc/ceph/ceph.conf --prepare-monmap"
     end
 
+    execute "CEPH MASTER INIT: prepare the osdmap" do
+      command "/usr/bin/osdmaptool --createsimple #{num_osds_from_db()} --clobber /tmp/mon-init/osdmap.junk --export-crush /tmp/mon-init/crush.new"
+    end
+
     ruby_block "Store fsid for the master mon" do
       block do
         node.set[:ceph][:monfsid] = `monmaptool --print /tmp/mon-init/monmap  | grep fsid | cut -d' ' -f2`.strip
@@ -68,8 +72,7 @@ action :initialize do
     end
 
     execute "Prepare the monitors file structure" do
-#      command "/usr/bin/ceph-mon -c /etc/ceph/ceph.conf --mkfs -i #{i} --monmap /tmp/mon-init/monmap --osdmap /tmp/mon-init/osdmap -k /etc/ceph/mon.#{i}.keyring"
-      command "/usr/bin/ceph-mon -c /etc/ceph/ceph.conf --mkfs -i #{i} --monmap /tmp/mon-init/monmap -k /etc/ceph/mon.#{i}.keyring"
+      command "/usr/bin/ceph-mon -c /etc/ceph/ceph.conf --mkfs -i #{i} --monmap /tmp/mon-init/monmap --osdmap /tmp/mon-init/osdmap.junk  -k /etc/ceph/mon.#{i}.keyring"
       action :run
     end
   else
@@ -97,6 +100,7 @@ action :set_all_permissions do
     end    
   end
 
+#FIXME: what should this be good for?
   osds = search("node", "ceph_osd_enabled:true AND ceph_clustername:#{node['ceph']['clustername']} AND chef_environment:#{node.chef_environment}", "X_CHEF_id_CHEF_X asc") || []
   osds.each do |osd|
     execute "Adding #{osd} as an OSD to the monitor" do

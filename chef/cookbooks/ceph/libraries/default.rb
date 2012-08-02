@@ -1,4 +1,4 @@
-JOURNAL_SIZE = 1024
+JOURNAL_SIZE = 1000
 
 def get_osd_index(path)
   if osd_initialized?(path)
@@ -71,32 +71,36 @@ def get_mon_nodes()
   return mon_nodes
 end
 
-#FIXME: this needs exception handling, in case of typos in the devices
 def get_osd_path(device)
   Chef::Log.info("Device to find id: #{device}")
-  id_ser = %x( /sbin/udevadm info --query=env --name #{device} 2>/dev/null | grep ID_SERIAL= )
-  id = id_ser.split('=')[1].strip
 
-  id_part = %x{ udevadm info --query=env --name #{device} | grep PART_ENTRY_NUMBER }
-  part = id_part.empty? ? "" : "-#{id_part.split('=')[1].strip}"
+  if File.exist?("#{device}")
+    id_ser = %x( /sbin/udevadm info --query=env --name #{device} 2>/dev/null | grep ID_SERIAL= )
+    id = id_ser.split('=')[1].strip
 
-  osd_path = "/var/lib/ceph/osd/#{node[:ceph][:clustername]}-#{id}#{part}"
-  return osd_path
+    id_part = %x{ udevadm info --query=env --name #{device} | grep PART_ENTRY_NUMBER }
+    part = id_part.empty? ? "" : "-#{id_part.split('=')[1].strip}"
+
+    osd_path = "/var/lib/ceph/osd/#{node[:ceph][:clustername]}-#{id}#{part}"
+    return osd_path
+  else
+    nil
+  end
 end
 
 def get_local_osds()
   if is_crowbar?
-    devices = node[:ceph][:devices]
     osds = []
-    devices.each do |device|
-      if osd_initialized?(get_osd_path(device))
-        osd = {}
-        osd[:index] = get_osd_index(get_osd_path(device))
-        osd[:hostname] = %x{hostname}.strip
-        osd[:data] = get_osd_path(device)
-        osd[:journal] =  "/var/lib/ceph/osdjournals/journal.$id"
-        osd[:journal_size] = JOURNAL_SIZE
-        osds << osd
+    if local_osds?
+      devices = node[:ceph][:devices] || []
+      devices.each do |device|
+        if osd_initialized?(get_osd_path(device))
+          osd = {}
+          osd[:index] = get_osd_index(get_osd_path(device))
+          osd[:hostname] = %x{hostname}.strip
+          osd[:data] = get_osd_path(device)
+          osds << osd
+        end
       end
     end
   end
@@ -109,4 +113,21 @@ end
 
 def get_num_running_osds()
   %x{ceph osd stat}.split[1].to_i
+end
+
+def local_osds?()
+  node[:ceph][:osd][:enabled]
+end
+
+def num_osds_from_db()
+  if node[:ceph][:osds]
+    nodes = node[:ceph][:osds].size
+    nodes *= node[:ceph][:devices].size if node[:ceph][:devices]
+  else
+    return 0
+  end
+end
+
+def ceph_running?
+  %x{ps aux | grep ceph | wc -l}.to_i > 1
 end
