@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+require 'chef'
 
 class CephService < ServiceObject
 
@@ -44,4 +45,32 @@ class CephService < ServiceObject
     role.save
 
   end
+
+  def validate_proposal proposal
+    super
+
+    elements = proposal["deployment"]["ceph"]["elements"]
+
+    # accept proposal with no allocated node -- ie, initial state
+    if ((not elements.has_key?("ceph-mon-master") or elements["ceph-mon-master"].length == 0) and
+        (not elements.has_key?("ceph-mon") or elements["ceph-mon"].length == 0) and
+        (not elements.has_key?("ceph-store") or elements["ceph-store"].length == 0)):
+       return
+    end
+
+    if not elements.has_key?("ceph-mon-master") or elements["ceph-mon-master"].length != 1
+      raise Chef::Exceptions::ValidationFailed.new("Need one (and only one) ceph-mon-master node")
+    end
+
+    if not elements.has_key?("ceph-mon") or elements["ceph-mon"].length < 1
+      raise Chef::Exceptions::ValidationFailed.new("Need at least two ceph-mon nodes")
+    elsif (elements["ceph-mon"].length % 2) != 0:
+      raise Chef::Exceptions::ValidationFailed.new("Need an even number of ceph-mon nodes")
+    end
+
+    if not elements.has_key?("ceph-store") or elements["ceph-store"].length < 2
+      raise Chef::Exceptions::ValidationFailed.new("Need at least two ceph-store nodes")
+    end
+  end
+
 end
