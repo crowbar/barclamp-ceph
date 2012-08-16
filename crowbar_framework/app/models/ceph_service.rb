@@ -71,6 +71,10 @@ class CephService < ServiceObject
     if not elements.has_key?("ceph-store") or elements["ceph-store"].length < 2
       raise Chef::Exceptions::ValidationFailed.new("Need at least two ceph-store nodes")
     end
+
+    if elements["ceph-mon"].include? elements["ceph-mon-master"][0]
+      raise Chef::Exceptions::ValidationFailed.new("Node cannot be a member of ceph-mon and ceph-mon-master at the same time")
+    end
   end
 
 end
