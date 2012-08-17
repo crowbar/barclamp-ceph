@@ -58,6 +58,10 @@ class CephService < ServiceObject
        return
     end
 
+    if proposal["attributes"]["ceph"]["devices"].length < 1
+      raise Chef::Exceptions::ValidationFailed.new("Need a list of devices to use on ceph-store nodes in the raw attributes")
+    end
+
     if not elements.has_key?("ceph-mon-master") or elements["ceph-mon-master"].length != 1
       raise Chef::Exceptions::ValidationFailed.new("Need one (and only one) ceph-mon-master node")
     end
