@@ -62,10 +62,8 @@ class CephService < ServiceObject
       raise Chef::Exceptions::ValidationFailed.new("Need one (and only one) ceph-mon-master node")
     end
 
-    if not elements.has_key?("ceph-mon") or elements["ceph-mon"].length < 1
-      raise Chef::Exceptions::ValidationFailed.new("Need at least two ceph-mon nodes")
-    elsif (elements["ceph-mon"].length % 2) != 0:
-      raise Chef::Exceptions::ValidationFailed.new("Need an even number of ceph-mon nodes")
+    if not elements.has_key?("ceph-mon") or (elements["ceph-mon"].length != 2 and elements["ceph-mon"].length != 4)
+      raise Chef::Exceptions::ValidationFailed.new("Need two or four ceph-mon nodes")
     end
 
     if not elements.has_key?("ceph-store") or elements["ceph-store"].length < 2
