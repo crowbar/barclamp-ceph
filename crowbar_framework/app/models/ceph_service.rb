@@ -58,36 +58,45 @@ class CephService < ServiceObject
        return
     end
 
+    errors = []
+
     if proposal["attributes"]["ceph"]["devices"].length < 1
-      raise Chef::Exceptions::ValidationFailed.new("Need a list of devices to use on ceph-store nodes in the raw attributes")
+      errors << "Need a list of devices to use on ceph-store nodes in the raw attributes."
     end
 
     if not elements.has_key?("ceph-mon-master") or elements["ceph-mon-master"].length != 1
-      raise Chef::Exceptions::ValidationFailed.new("Need one (and only one) ceph-mon-master node")
+      errors << "Need one (and only one) ceph-mon-master node."
     end
 
     if not elements.has_key?("ceph-mon") or (elements["ceph-mon"].length != 2 and elements["ceph-mon"].length != 4)
-      raise Chef::Exceptions::ValidationFailed.new("Need two or four ceph-mon nodes")
+      errors << "Need two or four ceph-mon nodes."
     end
 
     if not elements.has_key?("ceph-store") or elements["ceph-store"].length < 2
-      raise Chef::Exceptions::ValidationFailed.new("Need at least two ceph-store nodes")
+      errors << "Need at least two ceph-store nodes."
     end
 
-    if elements["ceph-mon"].include? elements["ceph-mon-master"][0]
-      raise Chef::Exceptions::ValidationFailed.new("Node cannot be a member of ceph-mon and ceph-mon-master at the same time")
+    if (elements.has_key?("ceph-mon") and
+        elements.has_key?("ceph-mon-master") and elements["ceph-mon-master"].length > 0 and
+        elements["ceph-mon"].include? elements["ceph-mon-master"][0])
+      errors << "Node cannot be a member of ceph-mon and ceph-mon-master at the same time."
     end
 
-    elements["ceph-store"].each do |n|
-      node = NodeObject.find_node_by_name(n)
-      roles = node.roles()
-      ["nova-multi-controller", "swift-storage"].each do |role|
-        if roles.include?(role)
-          raise Chef::Exceptions::ValidationFailed.new("Node #{n} already has the #{role} role; nodes cannot have both ceph-store and #{role} roles")
+    if elements.has_key?("ceph-store")
+      elements["ceph-store"].each do |n|
+        node = NodeObject.find_node_by_name(n)
+        roles = node.roles()
+        ["nova-multi-controller", "swift-storage"].each do |role|
+          if roles.include?(role)
+            errors << "Node #{n} already has the #{role} role; nodes cannot have both ceph-store and #{role} roles."
+          end
         end
       end
     end
 
+    if errors.length > 0
+      raise Chef::Exceptions::ValidationFailed.new(errors.join("\n"))
+    end
   end
 
 end
