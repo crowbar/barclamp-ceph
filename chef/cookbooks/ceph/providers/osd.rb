@@ -3,22 +3,31 @@
 action :initialize do
   b = ruby_block "Determine a new index for the OSD" do
     block do
-      node[:ceph][:last_osd_index] = %x(/usr/bin/ceph osd create).strip.to_i
-      node.save
+      %x(/usr/bin/ceph osd create)
     end
     action :nothing
   end
 
-  b.run_action(:create)
+  directory "/tmp/osd-init" do
+    owner "root"
+    group "root"
+    mode "0755"
+    action :create
+  end
 
-  osd_index = node[:ceph][:last_osd_index]
+
   osd_path = @new_resource.path
   host = @new_resource.host || node[:ceph][:host] || node[:hostname]
-  rack = @new_resource.rack || node[:ceph][:rack] || "rack-001"
+  rack = @new_resource.rack || node[:ceph][:rack] || "unknownrack"
+  osd_index = @new_resource.osd_index
+  newosd = new_osd?(@new_resource.osd_index)
 
-  node.set[:ceph][:osd]["#{osd_index}"] = {"#{@new_resource.device}" => @new_resource.path}
+  while newosd 
+    b.run_action(:create) 
+    newosd = new_osd?(osd_index)
+  end
+
   journal_location = "/var/lib/ceph/osdjournals/#{osd_index}/journal"
-  node.set[:ceph][:osd]["#{osd_index}"]["journal"] = journal_location
 
   directory  "/var/lib/ceph/osdjournals/#{osd_index}" do
     owner "root"
@@ -47,43 +56,21 @@ action :initialize do
     action :run
   end
 
-  mon_nodes = get_mon_nodes()
-  osds = get_local_osds()
-
-  osds += [{:index => osd_index,
-           :journal => journal_location,
-           :journal_size => JOURNAL_SIZE,
-           :data => osd_path}]
-
-  ceph_config "/etc/ceph/ceph.conf" do
-    monitors mon_nodes
-    osd_data osds
-  end
-
-#FIXME: I'll remove this, because I'm not sure wether it's needed at all
-#  execute "Add one osd to the maxosd if maxosd <= osd_index" do
-#    Chef::Log.info("get_max_osds: #{get_max_osds}, osd_index: #{osd_index}")
-#    command "ceph osd setmaxosd $(($(ceph osd getmaxosd | cut -d' ' -f3)+1))" # or should we set osd_index + 1?
-#    action :run
-#    only_if { get_max_osds() <= get_num_running_osds }
-#  end
-
-  execute "Add the OSD to the crushmap" do
+  execute "Add OSD.#{osd_index} to crushmap" do
     command "/usr/bin/ceph osd crush set #{osd_index} osd.#{osd_index} 1 pool=default rack=#{rack} host=#{host}"
     action :run
+    not_if { osd_in_crush?(osd_index) }
   end
 end
 
 action :start do
   osd_path = @new_resource.path
-  index = get_osd_index osd_path
+  index = @new_resource.osd_index
 
   service "osd.#{index}" do
     service_name "ceph"
     supports :restart => true
     start_command "/etc/init.d/ceph start osd#{index}"
-    stop_command "/etc/init.d/ceph stop osd#{index}"
-    restart_command "/etc/init.d/ceph restart osd#{index}"
     action [:enable, :start]
   end
 end

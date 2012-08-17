@@ -23,13 +23,13 @@ end
 devices = node[:ceph][:devices]
 Chef::Log.info "Devices: #{devices.join(',')}"
 
+# exclude non-exixting devices per-node
 wrong_devs = []
 devices.each do |device|
   next if File.exist?(device)
-  Chef::Log.error("Device #{device} doesn't exist")
+  Chef::Log.info("Device #{device} doesn't exist")
   wrong_devs << device
 end
-
 wrong_devs.each { |wd| devices.delete(wd) }
 
 devices.each do |device|
@@ -39,13 +39,10 @@ devices.each do |device|
     not_if "xfs_admin -l #{device}"
   end
 
-  # /var/lib/ceph/$type/$cluster-$id
-  # chicken-egg here - I don't know the index to mount this on - we'll go with the UUID for now (sorry TV)...  
-  
-  # /var/lib/ceph/$type/$cluster-$uuid ($id is unknown)
-
-  osd_path = get_osd_path(device)
-
+  osd_path = get_default_osd_path(device)
+  index = get_osd_index_from_db(device).to_i
+  Chef::Log.info("OSD Index from DB: #{index}") 
+ 
   directory osd_path do
     owner "root"
     group "root"
@@ -62,15 +59,17 @@ devices.each do |device|
     not_if mounted
   end
     
-  ceph_osd "Initializing new osd on #{device} - #{id}" do
+  ceph_osd "Initializing new osd on #{device} " do
     path osd_path
     device device
+    osd_index index
     action [:initialize]
     not_if "test -e #{osd_path}/whoami"
   end
 
   ceph_osd "Starting the osd from #{id}" do
     path osd_path
+    osd_index index
     action [:start]
   end
 end if devices

@@ -10,7 +10,7 @@ action :create do
   if node[:ceph][:master]
     ceph_keyring "client.admin" do
       action [:create, :add, :store]
-      not_if "test -e /etc/ceph/client.admin.keyring"
+      not_if { IO::File.exist?("/etc/ceph/client.admin.keyring") and get_master_secret() } 
     end
   end
 end
@@ -48,11 +48,6 @@ action :initialize do
     action :create
   end
 
-  # execute "Creating an osdmap" do
-  #   command "/usr/bin/osdmaptool --clobber --create-from-conf /tmp/mon-init/osdmap -c /etc/ceph/ceph.conf"
-  #   action :run
-  # end
-
   # either we are the first mon (master), either we are a backup mon (not master)
   if node[:ceph][:master]
     execute "CEPH MASTER INIT: Preparing the monmap" do
@@ -60,7 +55,7 @@ action :initialize do
     end
 
     execute "CEPH MASTER INIT: prepare the osdmap" do
-      command "/usr/bin/osdmaptool --createsimple #{num_osds_from_db()} --clobber /tmp/mon-init/osdmap.junk --export-crush /tmp/mon-init/crush.new"
+      command "/usr/bin/osdmaptool --create_from_conf  -c /etc/ceph/ceph.conf --clobber /tmp/mon-init/osdmap.junk --export-crush /tmp/mon-init/crush.new"
     end
 
     ruby_block "Store fsid for the master mon" do
