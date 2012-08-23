@@ -10,6 +10,11 @@
   "deployment": {
     "ceph": {
       "crowbar-revision": 0,
+      "element_states": {
+        "ceph-mon-master": [ "readying", "ready", "applying" ],
+        "ceph-mon": [ "readying", "ready", "applying" ],
+        "ceph-store": [ "readying", "ready", "applying" ]
+      },
       "elements": {},
       "element_order": [
         [ "ceph-mon-master" ],
