@@ -41,33 +41,28 @@ action :initialize do
     authtool_options "--set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'"
   end
 
-  directory "/tmp/mon-init" do
-    owner "root"
-    group "root"
-    mode "0755"
-    action :create
-  end
+  temp_mon_init_path = %x{/bin/mktemp /tmp/mon-init-XXXXXXXXXX}.strip
 
   # either we are the first mon (master), either we are a backup mon (not master)
   if node[:ceph][:master]
     execute "CEPH MASTER INIT: Preparing the monmap" do
-      command "/sbin/mkcephfs -d /tmp/mon-init -c /etc/ceph/ceph.conf --prepare-monmap"
+      command "/sbin/mkcephfs -d #{temp_mon_init_path} -c /etc/ceph/ceph.conf --prepare-monmap"
     end
 
     execute "CEPH MASTER INIT: prepare the osdmap" do
-      command "/usr/bin/osdmaptool --create_from_conf  -c /etc/ceph/ceph.conf --clobber /tmp/mon-init/osdmap.junk --export-crush /tmp/mon-init/crush.new"
+      command "/usr/bin/osdmaptool --create_from_conf  -c /etc/ceph/ceph.conf --clobber #{temp_mon_init_path}/osdmap.junk --export-crush #{temp_mon_init_path}/crush.new"
     end
 
     ruby_block "Store fsid for the master mon" do
       block do
-        node.set[:ceph][:monfsid] = `monmaptool --print /tmp/mon-init/monmap  | grep fsid | cut -d' ' -f2`.strip
+        node.set[:ceph][:monfsid] = `monmaptool --print #{temp_mon_init_path}/monmap  | grep fsid | cut -d' ' -f2`.strip
         node.save
       end
       action :create
     end
 
     execute "Prepare the monitors file structure" do
-      command "/usr/bin/ceph-mon -c /etc/ceph/ceph.conf --mkfs -i #{i} --monmap /tmp/mon-init/monmap --osdmap /tmp/mon-init/osdmap.junk  -k /etc/ceph/mon.#{i}.keyring"
+      command "/usr/bin/ceph-mon -c /etc/ceph/ceph.conf --mkfs -i #{i} --monmap #{temp_mon_init_path}/monmap --osdmap #{temp_mon_init_path}/osdmap.junk  -k /etc/ceph/mon.#{i}.keyring"
       action :run
     end
   else
