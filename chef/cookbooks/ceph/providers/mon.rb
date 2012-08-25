@@ -18,6 +18,13 @@ end
 action :initialize do 
   i = @new_resource.index
 
+  directory "/var/run/ceph" do
+    owner "root"
+    group "root"
+    mode "0750"
+    action :create
+  end
+
   Chef::Log.info("mon::initialize")
   if node[:ceph][:master]
     Chef::Log.info("mon::initialize master")
