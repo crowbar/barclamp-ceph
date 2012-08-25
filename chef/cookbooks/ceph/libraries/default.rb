@@ -102,7 +102,13 @@ def get_all_osds()
   if is_crowbar?
        
     osd_nodes = node["ceph"]["osd_nodes"] || {}
-    osd_nodes.each do |node,osd_data|
+    osd_nodes.sort_by { |node,osd_data| node }.each do |node,osd_data|
+      port_counter = 6799
+      search(:node, "name:#{node}") do |match|
+        public_addr = Chef::Recipe::Barclamp::Inventory.get_network_by_type(match, "admin").address
+        cluster_addr = Chef::Recipe::Barclamp::Inventory.get_network_by_type(match, "storage").address
+      end
+
       Chef::Log.info("Node: #{node}")
       Chef::Log.info("Data: #{osd_data.inspect}") 
       osd_data.each do |index, device|
@@ -110,8 +116,12 @@ def get_all_osds()
         osd[:hostname]= node.split('.')[0]
         osd[:device] = device 
         osd[:index] = index
-        Chef::Log.info("OSD data: #{osd[:hostname]}, OSD.#{osd[:index]}, #{osd[:device]}" )
-        Chef::Log.info("OSD data: #{osd.inspect}" )        
+        osd[:cluster_addr] = cluster_addr
+        osd[:cluster_port] = (port_counter += 1)
+        osd[:public_addr] = public_addr
+        osd[:public_port] = (port_counter += 1)
+        Chef::Log.info("OSD data: #{osd[:hostname]}, OSD.#{osd[:index]}, #{osd[:device]}, #{osd[:cluster_port]}, #{osd[:public_port]}" )
+        Chef::Log.info("OSD data: #{osd.inspect}" )
         osds << osd
       end 
     end
