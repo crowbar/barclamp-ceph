@@ -59,6 +59,13 @@ class CephService < ServiceObject
       node_array << node_hash
     end
     role.save
+
+    # Make sure to use the storage network
+    net_svc = NetworkService.new @logger
+           
+    all_nodes.each do |n|
+      net_svc.allocate_ip "default", "storage", "host", n
+    end
   end
 
   def validate_proposal_after_save proposal
