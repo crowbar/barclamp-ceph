@@ -104,6 +104,8 @@ def get_all_osds()
     osd_nodes = node["ceph"]["osd_nodes"] || {}
     osd_nodes.sort_by { |node,osd_data| node }.each do |node,osd_data|
       port_counter = 6799
+      cluster_addr = ''
+      public_addr = ''
       search(:node, "name:#{node}") do |match|
         public_addr = Chef::Recipe::Barclamp::Inventory.get_network_by_type(match, "admin").address
         cluster_addr = Chef::Recipe::Barclamp::Inventory.get_network_by_type(match, "storage").address
