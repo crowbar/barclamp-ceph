@@ -21,6 +21,11 @@
         [ "ceph-mon" ],
         [ "ceph-store" ]
       ],
+      "element_run_list_order": {
+        "ceph-mon-master": 80,
+        "ceph-mon": 81,
+        "ceph-store": 82
+      },
       "config": {
         "environment": "ceph-base-config",
         "mode": "full",
