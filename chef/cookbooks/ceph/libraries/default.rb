@@ -39,7 +39,7 @@ def get_master_secret
   end 
 end
 
-def get_master_mon
+def get_master_mon_secret
   master_mons = search("node", "ceph_master:true AND ceph_clustername:#{node['ceph']['clustername']} AND chef_environment:#{node.chef_environment}", "X_CHEF_id_CHEF_X asc") || []
   
   if (master_mons.size == 0) # allow chef server to reindex my data...
@@ -47,11 +47,7 @@ def get_master_mon
     master_mons = search("node", "ceph_master:true AND ceph_clustername:#{node['ceph']['clustername']} AND chef_environment:#{node.chef_environment}", "X_CHEF_id_CHEF_X asc") || []
   end
 
-  return master_mons.first
-end
-
-def get_master_mon_secret
-  master = get_master_mon
+  master = master_mons.first
   if master.has_key?("ceph") && master[:ceph].has_key?("secrets") && master[:ceph][:secrets].has_key?("mon.")  
     master[:ceph][:secrets]['mon.']
   else
@@ -83,27 +79,16 @@ def get_mon_nodes()
   if is_crowbar?
     mon_nodes = []
     mon_names = node['ceph']['monitors'] || []
-
-    master_name = get_master_mon.name
-    master_index = nil
-
-    mon_names.sort_by { |node| node }.each_with_index do |n, index|
+    mon_names.each do |n|
       monitor = {}
       search(:node, "name:#{n}") do |match|
         monitor[:address] = Chef::Recipe::Barclamp::Inventory.get_network_by_type(match, "admin").address
         monitor[:name] = match[:hostname]
-        # save index at which master will be added, to be able to remove it later
-        master_index = index if match.name.eql?('master_name')
       end
       mon_nodes << monitor
     end
-
-    # remove master from mon_nodes, since we will add it back at the begining
-    master = ''
-    master = mon_nodes.delete_at(master_index) unless master_index.nil?
-
   end
-  return [master] + mon_nodes
+  return mon_nodes
 end
 
 def get_default_osd_path(device)
