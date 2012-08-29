@@ -93,21 +93,17 @@ def get_mon_nodes()
         monitor[:address] = Chef::Recipe::Barclamp::Inventory.get_network_by_type(match, "admin").address
         monitor[:name] = match[:hostname]
         # save index at which master will be added, to be able to remove it later
-        master_index = index if match.name.eql?(master_name)
+        master_index = index if match.name.eql?('master_name')
       end
       mon_nodes << monitor
     end
 
     # remove master from mon_nodes, since we will add it back at the begining
-    master = nil
+    master = ''
     master = mon_nodes.delete_at(master_index) unless master_index.nil?
 
   end
-  if master
-    return [master] + mon_nodes
-  else
-    return mon_nodes  
-  end
+  return [master] + mon_nodes
 end
 
 def get_default_osd_path(device)
