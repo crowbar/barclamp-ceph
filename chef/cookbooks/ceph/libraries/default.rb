@@ -113,7 +113,7 @@ def get_all_osds()
 
       Chef::Log.info("Node: #{node}")
       Chef::Log.info("Data: #{osd_data.inspect}") 
-      osd_data.each do |index, device|
+      osd_data.sort_by { |index, device| index }.each do |index, device|
         osd = {}
         osd[:hostname]= node.split('.')[0]
         osd[:device] = device 
