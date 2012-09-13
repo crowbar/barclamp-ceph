@@ -108,10 +108,15 @@ class CephService < ServiceObject
       elements["ceph-store"].each do |n|
         node = NodeObject.find_node_by_name(n)
         roles = node.roles()
-        ["nova-multi-controller", "swift-storage"].each do |role|
-          if roles.include?(role)
-            errors << "Node #{n} already has the #{role} role; nodes cannot have both ceph-store and #{role} roles."
-          end
+
+        role = "nova-multi-controller"
+        if roles.include?(role) and node["nova"]["volume"]["type"] != "rados"
+          errors << "Node #{n} already has the #{role} role; nodes cannot have both ceph-store and #{role} roles if Ceph is not used for volume storage in Nova."
+        end
+
+        role = "swift-storage"
+        if roles.include?(role)
+          errors << "Node #{n} already has the #{role} role; nodes cannot have both ceph-store and #{role} roles."
         end
       end
     end
