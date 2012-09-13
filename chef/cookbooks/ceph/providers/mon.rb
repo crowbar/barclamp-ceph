@@ -55,14 +55,14 @@ action :initialize do
     action :create
   end
 
+  execute "CEPH MASTER INIT: prepare the osdmap" do
+    command "/usr/bin/osdmaptool --create_from_conf  -c /etc/ceph/ceph.conf --clobber /tmp/mon-init/osdmap.junk --export-crush /tmp/mon-init/crush.new"
+  end
+
   # either we are the first mon (master), either we are a backup mon (not master)
   if node[:ceph][:master]
     execute "CEPH MASTER INIT: Preparing the monmap" do
       command "/sbin/mkcephfs -d /tmp/mon-init -c /etc/ceph/ceph.conf --prepare-monmap"
-    end
-
-    execute "CEPH MASTER INIT: prepare the osdmap" do
-      command "/usr/bin/osdmaptool --create_from_conf  -c /etc/ceph/ceph.conf --clobber /tmp/mon-init/osdmap.junk --export-crush /tmp/mon-init/crush.new"
     end
 
     ruby_block "Store fsid for the master mon" do
@@ -82,12 +82,10 @@ action :initialize do
     monfsid = get_master_mon_fsid
     
     execute "Prepare the monitors file structure" do
-      command "/usr/bin/ceph-mon -c /etc/ceph/ceph.conf --mkfs -i #{i} --fsid '#{monfsid}' -k /etc/ceph/mon.#{i}.keyring"
+      command "/usr/bin/ceph-mon -c /etc/ceph/ceph.conf --mkfs -i #{i}  --osdmap /tmp/mon-init/osdmap.junk --fsid '#{monfsid}' -k /etc/ceph/mon.#{i}.keyring"
       action :run
     end
-
   end
-
 end
 
 action :set_all_permissions do
