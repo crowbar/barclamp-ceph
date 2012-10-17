@@ -37,6 +37,7 @@ locale_additions:
       ceph:
         edit_attributes:
           attributes: Attributes
-          foo: Comic Choice
+          store_nodes_device_list: Storage Device List
+          store_nodes_device_list_hint: (Space-separated) to use on ceph-store nodes
         edit_deployment:
           deployment: Deployment
