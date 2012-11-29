@@ -19,8 +19,15 @@ def get_osd_index_from_db(device)
 end
 
 def new_osd?(index)
-  Chef::Log.info("in New OSD")
-  return !system("ceph osd tree | grep -q osd.#{index}")
+  ret = !system("ceph osd tree | grep -q osd.#{index}")
+  Chef::Log.info("in New OSD: #{ ret }")
+  ret
+end
+
+def osd_initialized?(index)
+  ret = system("ceph osd tree | grep -q 'osd.#{index}[[:space:]]up'")
+  Chef::Log.info("OSD initialized?: #{ ret }")
+  ret
 end
 
 def get_master_secret
