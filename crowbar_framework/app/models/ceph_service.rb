@@ -30,33 +30,53 @@ class CephService < ServiceObject
 
   def apply_role_pre_chef_call(old_role, role, all_nodes)
     @logger.debug("ceph apply_role_pre_chef_call: entering #{all_nodes.inspect}")
-    master_mon = role.override_attributes["ceph"]["elements"]["ceph-mon-master"] 
-    monitors = role.override_attributes["ceph"]["elements"]["ceph-mon"]  
+    master_mon = role.override_attributes["ceph"]["elements"]["ceph-mon-master"] || []
+    monitors = role.override_attributes["ceph"]["elements"]["ceph-mon"] || []
+    monitors += master_mon
     osd_nodes = role.override_attributes["ceph"]["elements"]["ceph-store"] || []
     devices = role.default_attributes["ceph"]["devices"] || []
-    @logger.debug("osd_nodes: #{osd_nodes.inspect}")
-    @logger.debug("devices: #{devices.inspect}")
-    if monitors.nil?
-      monitors = master_mon
+
+    if old_role
+      old_osd_nodes = old_role.override_attributes["ceph"]["elements"]["ceph-store"] || []
     else
-      monitors << master_mon.first
+      old_osd_nodes = []
     end
+
+    @logger.debug("master_mon: #{master_mon.inspect}")
+    @logger.debug("monitors: #{monitors.inspect}")
+    @logger.debug("devices: #{devices.inspect}")
+    @logger.debug("osd_nodes: #{osd_nodes.inspect}")
+    @logger.debug("old_osd_nodes: #{old_osd_nodes.inspect}")
+    @logger.debug("role: #{role.inspect}")
+    @logger.debug("old_role: #{old_role.inspect}")
     
     role.override_attributes["ceph"]["monitors"] = monitors
     role.override_attributes["ceph"]["osd_nodes"] = {}
     role.override_attributes["ceph"]["rack"] = "unknownrack"
-    osd_count = 0
-   
-    node_array = []
-    osd_nodes.each do |osd_node|
+
+    if old_role
+      role.override_attributes["ceph"]["num_osds"] = old_role.override_attributes["ceph"]["num_osds"]
+    else
+      role.override_attributes["ceph"]["num_osds"] = 0
+    end
+
+    osd_count = role.override_attributes["ceph"]["num_osds"]
+
+    # just take the remaining osd_nodes
+    (old_osd_nodes & osd_nodes).each do |osd_node|
+      role.override_attributes["ceph"]["osd_nodes"]["#{osd_node}"] = old_role.override_attributes["ceph"]["osd_nodes"]["#{osd_node}"]
+    end
+
+    # create new osds on new osd nodes
+    (osd_nodes - old_osd_nodes).each do |osd_node|
       node_hash = {}
       devices.each do |device|
         node_hash["#{osd_count}"] = device  
-        @logger.debug("in loop: #{osd_node}, #{device}, #{osd_count}")
+        @logger.debug("new osd_node: #{osd_node}, #{device}, #{osd_count}")
         osd_count += 1
       end
       role.override_attributes["ceph"]["osd_nodes"]["#{osd_node}"] = node_hash
-      node_array << node_hash
+      role.override_attributes["ceph"]["num_osds"] = osd_count
     end
     role.save
 
@@ -125,5 +145,4 @@ class CephService < ServiceObject
       raise Chef::Exceptions::ValidationFailed.new(errors.join("\n"))
     end
   end
-
 end
