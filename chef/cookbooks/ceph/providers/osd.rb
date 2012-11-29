@@ -70,7 +70,8 @@ action :start do
   service "osd.#{index}" do
     service_name "ceph"
     supports :restart => true
-    start_command "/etc/init.d/ceph start osd#{index}"
+    start_command "/etc/init.d/ceph start osd.#{index}"
     action [:enable, :start]
   end
 end
+
