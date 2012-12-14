@@ -13,8 +13,6 @@ package "util-linux" do
   action :upgrade
 end
 
-node[:ceph][:num_osds] = 0 unless node[:ceph][:num_osds]
-
 node[:ceph][:osd][:enabled] = true
 
 c = ceph_keyring "client.admin" do
@@ -36,15 +34,12 @@ end
 wrong_devs.each { |wd| devices.delete(wd) }
 
 devices.each do |device|
-
-  node[:ceph][:num_osds] += 1
-
   osd_path = get_default_osd_path(device)
   index = get_osd_index_from_db(device).to_i
   Chef::Log.info("OSD Index from DB: #{index}")
 
   execute "kill processes accessing #{device}, if an OSD should be deployed" do
-    command "( kill -9 $(lsof -Fp #{device} | sed -e s/^p//) ; wait 3; exit 0)"
+    command "( kill -9 $(lsof -t #{device}); wait 3; exit 0)"
     not_if { osd_initialized?(index) }
   end
 
