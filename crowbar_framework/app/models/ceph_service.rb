@@ -110,8 +110,8 @@ class CephService < ServiceObject
       errors << "Need one (and only one) ceph-mon-master node."
     end
 
-    if not elements.has_key?("ceph-mon") or (elements["ceph-mon"].length != 2 and elements["ceph-mon"].length != 4)
-      errors << "Need two or four ceph-mon nodes."
+    if not elements.has_key?("ceph-mon") or elements["ceph-mon"].length % 2 != 0
+      errors << "Need multiple of two ceph-mon nodes."
     end
 
     if not elements.has_key?("ceph-store") or elements["ceph-store"].length < 2
