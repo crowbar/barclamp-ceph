@@ -1,5 +1,4 @@
 action :create do
-
   search_restrictions = " AND ceph_clustername:#{node['ceph']['clustername']} AND chef_environment:#{node.chef_environment}"
   search_myself = " OR hostname:#{node[:hostname]}"
 
@@ -7,15 +6,15 @@ action :create do
   osds = []
 
   template new_resource.config_file do
-          source          "ceph.conf"
-          mode            "0644"
-          action          :create
-          variables( 
-            :mdss => mdss,
-            :osds => osds,
-            :extra_osds_data => new_resource.osd_data,
-            :monitors => new_resource.monitors,
-            :clustername => new_resource.clustername
-          )
+    source "ceph.conf"
+    mode "0644"
+    action :create
+    variables(
+      :mdss => mdss,
+      :osds => osds,
+      :extra_osds_data => new_resource.osd_data,
+      :monitors => new_resource.monitors,
+      :clustername => new_resource.clustername
+    )
   end
 end

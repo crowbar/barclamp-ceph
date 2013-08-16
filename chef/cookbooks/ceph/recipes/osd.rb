@@ -9,9 +9,7 @@ if master_mons.size == 0
 end
 
 include_recipe "ceph::default"
-package "util-linux" do
-  action :upgrade
-end
+package "util-linux"
 
 node[:ceph][:osd][:enabled] = true
 
