@@ -1,6 +1,6 @@
 {
   "id": "bc-template-ceph",
-  "description": "Installation for Ceph <span style='color: red;'>(As of SUSE Cloud 1.0 Ceph is not officially supported but rather included as a technical preview, so using Nova Volume instead is recommended)</span>",
+  "description": "Installation for Ceph <span style='color: red;'>(For SUSE Cloud 2.0, Ceph is officially included as a technical preview)</span>",
   "attributes": {
     "ceph": {
       "devices": [],
