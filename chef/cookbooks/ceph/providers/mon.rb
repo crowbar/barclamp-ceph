@@ -10,12 +10,12 @@ action :create do
   if node[:ceph][:master]
     ceph_keyring "client.admin" do
       action [:create, :add, :store]
-      not_if { IO::File.exist?("/etc/ceph/client.admin.keyring") and get_master_secret() } 
+      not_if { IO::File.exist?("/etc/ceph/ceph.client.admin.keyring") and get_master_secret() }
     end
   end
 end
 
-action :initialize do 
+action :initialize do
   i = @new_resource.index
 
   directory "/var/run/ceph" do
@@ -28,21 +28,24 @@ action :initialize do
   Chef::Log.info("mon::initialize")
   if node[:ceph][:master]
     Chef::Log.info("mon::initialize master")
-    ceph_keyring "mon.#{i}" do
+    ceph_keyring "#{i}" do
+      clustername "mon"
       action [:create, :add, :store]
       keyname "mon." # WTF?
     end
   else
-    ceph_keyring "mon.#{i}" do
-      Chef::Log.info("mon::initialize non master")
+    Chef::Log.info("mon::initialize non master")
+    ceph_keyring "#{i}" do
+      clustername "mon"
       secret get_master_mon_secret
       action [:create, :add, :store]
       keyname "mon." # WTF?
     end
-  end    
+  end
 
-  ceph_keyring "mon.#{i}" do
+  ceph_keyring "#{i}" do
     action :add
+    clustername "mon"
     secret get_master_secret
     keyname "client.admin"
     authtool_options "--set-uid=0 --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow'"
@@ -80,7 +83,7 @@ action :initialize do
   else
     # not master
     monfsid = get_master_mon_fsid
-    
+
     execute "Prepare the monitors file structure" do
       command "/usr/bin/ceph-mon -c /etc/ceph/ceph.conf --mkfs -i #{i}  --osdmap /tmp/mon-init/osdmap.junk --fsid '#{monfsid}' -k /etc/ceph/mon.#{i}.keyring"
       action :run
@@ -97,7 +100,7 @@ action :set_all_permissions do
       command "/usr/bin/ceph-authtool -n mds.#{mds[:ceph][:mds][:index]} --add-key #{mds[:ceph][:mds][:secret]} /etc/ceph/keyring.mon  --cap mon 'allow rwx' --cap osd 'allow *' --cap mds 'allow'"
       action :run
       only_if mds.ceph.mds.attribute?(:secret)
-    end    
+    end
   end
 
 #FIXME: what should this be good for?
@@ -107,6 +110,6 @@ action :set_all_permissions do
       command "/usr/bin/ceph-authtool -n osd.#{osd[:ceph][:osd][:index]} --add-key #{osd[:ceph][:osd][:secret]} /etc/ceph/keyring.mon  --cap mon 'allow rwx' --cap osd 'allow *'"
       action :run
       only_if { osd.ceph.osd.attribute?(:secret) }
-    end    
+    end
   end
 end

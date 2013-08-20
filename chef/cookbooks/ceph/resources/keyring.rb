@@ -2,6 +2,7 @@ actions :create, :add, :store
 
 attribute :name, :kind_of => String, :name_attribute => true
 attribute :keyring, :kind_of => String
+attribute :clustername, :kind_of => String, :default => 'ceph'
 attribute :secret, :kind_of => String, :default => ''
 attribute :force_overwrite, :default => false
 attribute :authtool_options, :kind_of => String, :default => ''

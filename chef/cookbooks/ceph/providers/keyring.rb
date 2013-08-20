@@ -1,7 +1,7 @@
 action :create do
-  keyring = @new_resource.keyring ? @new_resource.keyring : "/etc/ceph/#{@new_resource.name}.keyring"
-  name = @new_resource.keyname ? @new_resource.keyname : @new_resource.name  
-  
+  keyring = @new_resource.keyring ? @new_resource.keyring : "/etc/ceph/#{@new_resource.clustername}.#{@new_resource.name}.keyring"
+  name = @new_resource.keyname ? @new_resource.keyname : @new_resource.name
+
   if @new_resource.force_overwrite
     execute "Creating the keyring for #{name} in #{keyring}" do
       command "/usr/bin/ceph-authtool --create-keyring #{keyring}"
@@ -17,9 +17,9 @@ action :create do
 
 end
 
-action :add do 
-  keyring = @new_resource.keyring ? @new_resource.keyring : "/etc/ceph/#{@new_resource.name}.keyring"
-  name = @new_resource.keyname ? @new_resource.keyname : @new_resource.name  
+action :add do
+  keyring = @new_resource.keyring ? @new_resource.keyring : "/etc/ceph/#{@new_resource.clustername}.#{@new_resource.name}.keyring"
+  name = @new_resource.keyname ? @new_resource.keyname : @new_resource.name
   options = @new_resource.authtool_options
   secret = @new_resource.secret
 
@@ -39,8 +39,8 @@ action :add do
 end
 
 action :store do
-  keyring = @new_resource.keyring ? @new_resource.keyring : "/etc/ceph/#{@new_resource.name}.keyring"
-  name = @new_resource.keyname ? @new_resource.keyname : @new_resource.name  
+  keyring = @new_resource.keyring ? @new_resource.keyring : "/etc/ceph/#{@new_resource.clustername}.#{@new_resource.name}.keyring"
+  name = @new_resource.keyname ? @new_resource.keyname : @new_resource.name
 
   ruby_block "Store secret from the keyring #{keyring} to the attributes for #{name}" do
     block do

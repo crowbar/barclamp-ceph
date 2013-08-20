@@ -5,7 +5,7 @@ master_mons = search("node", "roles:ceph-mon-master AND ceph_clustername:#{node[
 
 if master_mons.size == 0
   Chef::Log.error("No master server found in ceph cluster #{node[:ceph][:clustername]} - not initializing/configuring OSDs")
-  return 
+  return
 end
 
 include_recipe "ceph::default"
@@ -15,10 +15,10 @@ node[:ceph][:osd][:enabled] = true
 
 c = ceph_keyring "client.admin" do
   secret get_master_secret
-  action [:create, :add] 
+  action [:create, :add]
 end
 
-# search for possible OSDs, labeled 
+# search for possible OSDs, labeled
 devices = node[:ceph][:devices]
 Chef::Log.info "Devices: #{devices.join(',')}"
 
@@ -45,7 +45,7 @@ devices.each do |device|
     command "(umount #{device}; exit 0)"
     not_if { osd_initialized?(index) }
   end
- 
+
   execute "make xfs filesystem on #{device}" do
     command "mkfs.xfs -f #{device}"
     not_if { osd_initialized?(index) }
@@ -58,15 +58,15 @@ devices.each do |device|
     recursive true
     action :create
   end
-  
-  mount osd_path do 
+
+  mount osd_path do
     device device
     fstype "xfs"
     options "noatime"
     action [:enable, :mount]
     not_if mounted
   end
-    
+
   ceph_osd "Initializing new osd on #{device} " do
     path osd_path
     device device
