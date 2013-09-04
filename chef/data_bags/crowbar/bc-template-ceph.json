@@ -1,6 +1,6 @@
 {
   "id": "bc-template-ceph",
-  "description": "Installation for Ceph <span style='color: red;'>(For SUSE Cloud 2.0, Ceph is officially included as a technical preview)</span>",
+  "description": "Installation for Ceph <span style='color: red;'>(For SUSE Cloud 2.0, Ceph is included as a technology preview)</span>",
   "attributes": {
     "ceph": {
       "devices": [],
