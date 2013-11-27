@@ -7,7 +7,7 @@ barclamp:
     - openstack
 
   os_support:
-    - ubuntu-10.10
+    - ubuntu-12.04
 
 crowbar:
   layout: 1
@@ -15,16 +15,19 @@ crowbar:
   run_order: 80
   chef_order: 80
 
-# TODO shouldn't hardcode maverick, crowbar is not flexible enough yet
 # TODO crowbar *and* chef cookbooks don't really need -dbg
 debs:
-  repos:
-    - deb http://ceph.newdream.net/debian/ maverick main
+  ubuntu-12.04:
+    repos:
+      - deb http://ceph.com/debian-dumpling precise main
   pkgs:
     - ceph
-    - ceph-common
-    - libceph1
     - ceph-dbg
+    - ceph-common
+    - ceph-common-dbg
+    - libcephfs1
+    - gdisk
+    - libgoogle-perftools0
 
 gems:
   pkgs:
