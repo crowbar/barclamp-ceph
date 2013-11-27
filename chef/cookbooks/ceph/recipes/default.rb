@@ -44,6 +44,11 @@ when "rhel", "fedora"
     }
     packages += packages_dbg
   end
+when "suse"
+  packages = %w{
+      ceph
+      ceph-kmp-default
+  }
 end
 
 packages.each do |pkg|
