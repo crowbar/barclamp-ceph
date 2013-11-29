@@ -44,10 +44,10 @@ debs:
 rpms:
   centos-6.4:
     repos:
-      - bare ceph bobtail http://ceph.com/rpm-bobtail/rhel6/x86_64/repodata/
+      - bare ceph bobtail http://ceph.com/rpm-bobtail/rhel6/x86_64/
   redhat-6.4:
     repos:
-      - bare ceph bobtail http://ceph.com/rpm-bobtail/rhel6/x86_64/repodata/
+      - bare ceph bobtail http://ceph.com/rpm-bobtail/rhel6/x86_64/
   pkgs:
     - ceph
     - ceph-debuginfo
