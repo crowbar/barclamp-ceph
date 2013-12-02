@@ -21,7 +21,7 @@ crowbar:
 debs:
   ubuntu-12.04:
     repos:
-      - deb http://ceph.com/debian-bobtail precise main
+      - deb http://ceph.com/debian-emperor precise main
   pkgs:
     - ceph
     - ceph-dbg
@@ -44,10 +44,10 @@ debs:
 rpms:
   centos-6.4:
     repos:
-      - bare ceph bobtail http://ceph.com/rpm-bobtail/rhel6/x86_64/
+      - bare ceph emperor http://ceph.com/rpm-emperor/rhel6/x86_64/
   redhat-6.4:
     repos:
-      - bare ceph bobtail http://ceph.com/rpm-bobtail/rhel6/x86_64/
+      - bare ceph emperor http://ceph.com/rpm-emperor/rhel6/x86_64/
   pkgs:
     - ceph
     - ceph-debuginfo
