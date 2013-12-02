@@ -19,7 +19,7 @@
 
 packages = []
 
-case node['platform_family']
+case node[:platform]
 when "debian"
   packages = %w{
       ceph
@@ -33,7 +33,7 @@ when "debian"
     }
     packages += packages_dbg
   end
-when "rhel", "fedora"
+when "redhat", "centos", "fedora"
   packages = %w{
       ceph
   }
