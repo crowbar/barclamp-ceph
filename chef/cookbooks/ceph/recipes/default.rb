@@ -40,7 +40,7 @@ when "redhat", "centos", "fedora"
 
   if node['ceph']['install_debug']
     packages_dbg = %w{
-      ceph-debug
+      ceph-debuginfo
     }
     packages += packages_dbg
   end
