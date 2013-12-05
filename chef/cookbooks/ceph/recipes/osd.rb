@@ -165,8 +165,14 @@ else
           Log.info("osd: osd_device #{osd_device} has already been setup.")
           next
         end
-        create_cmd = "ceph-disk prepare --zap #{osd_device['device']}" +
-                      " && ceph-disk-activate #{osd_device['device']}1"
+        create_cmd = "ceph-disk prepare --zap #{osd_device['device']}"
+
+        #redhat has buggy udev so we have to use workaround from ceph
+        if %w(redhat centos).include?(node.platform)
+          create_cmd = create_cmd + " && ceph-disk-udev 2 #{osd_device['device']}2 #{osd_device['device']} ; ceph-disk-udev 1 #{osd_device['device']}1 #{osd_device['device']}"
+        else
+          create_cmd = create_cmd + " && ceph-disk-activate #{osd_device['device']}1"
+        end
 
         execute "Activating Ceph OSD on #{osd_device['device']}" do
           command create_cmd
