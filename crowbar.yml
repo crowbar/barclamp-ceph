@@ -20,6 +20,13 @@ roles:
     flags:
       - implicit
       - cluster
+    attribs:
+      - name: ceph-fs_uuid
+        description: 'The UUID of the Ceph filesystem this cluster will manage'
+        map: 'ceph/config/fsid'
+      - name: ceph-cluster_name
+        description: 'The name of this Ceph cluster'
+        map: 'ceph/config/name'
   - name: ceph-mon
     jig: chef-solo
     requires:
@@ -27,6 +34,22 @@ roles:
     flags:
       - cluster
       - server
+    attribs:
+      - name: ceph-mon_secret
+        description: "The secret key that Ceph monitors will use to identify each other."
+        map: 'ceph/monitor-secret'
+      - name: ceph-mon-nodes
+        description: 'The list of nodes that will act as ceph monitors'
+        map: 'ceph/monitors'
+      - name: ceph-admin-key
+        description: 'The secret key used to identify the Ceph cluster administrator'
+        map: 'ceph/admin'
+      - name: ceph-mds-key
+        description: 'The secret key used to bootstrap Ceph MDS services'
+        map: 'ceph/bootstrap-mds'
+      - name: ceph-osd-key
+        description: 'The secret key used to bootstrap Ceph OSD services'
+        map: 'ceph/bootstrap-osd'
   - name: ceph-osd
     jig: chef-solo
     requires:
