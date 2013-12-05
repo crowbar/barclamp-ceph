@@ -168,8 +168,9 @@ else
         create_cmd = "ceph-disk prepare --zap #{osd_device['device']}"
 
         #redhat has buggy udev so we have to use workaround from ceph
+        b_dev=osd_device['device'].gsub("/dev/", "")
         if %w(redhat centos).include?(node.platform)
-          create_cmd = create_cmd + " && ceph-disk-udev 2 #{osd_device['device']}2 #{osd_device['device']} ; ceph-disk-udev 1 #{osd_device['device']}1 #{osd_device['device']}"
+          create_cmd = create_cmd + " && ceph-disk-udev 2 #{b_dev}2 #{b_dev} ; ceph-disk-udev 1 #{b_dev}1 #{b_dev}"
         else
           create_cmd = create_cmd + " && ceph-disk-activate #{osd_device['device']}1"
         end
