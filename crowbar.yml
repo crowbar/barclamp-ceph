@@ -27,6 +27,11 @@ debs:
     - ceph-dbg
     - ceph-common
     - ceph-common-dbg
+    - ceph-test
+    - ceph-mds
+    - ceph-fs-common
+    - radosgw
+    - radosgw-agent
     - libcephfs1
     - gdisk
     - google-perftools2
