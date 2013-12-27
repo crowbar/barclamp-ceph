@@ -27,19 +27,13 @@ debs:
     - ceph-dbg
     - ceph-common
     - ceph-common-dbg
-    - ceph-test
-    - ceph-mds
-    - ceph-fs-common
-    - radosgw
-    - radosgw-agent
     - libcephfs1
     - gdisk
-    - cryptsetup
-    - libgoogle-perftools0
+    - google-perftools2
+    - libgoogle-perftools4
     - libaio1
     - libsnappy1
     - libleveldb1
-    - google-perftools2
 
 rpms:
   centos-6.4:
