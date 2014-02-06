@@ -117,7 +117,7 @@ else
   end
 
   execute "add bootstrap-osd caps" do
-    command "ceph auth caps client.bootstrap-osd osd 'allow *' mon 'allow *'"
+    command "ceph auth caps client.bootstrap-osd mon 'allow profile bootstrap-osd'"
   end
 
   if is_crowbar?
