@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 name			"ceph"
 maintainer			"Kyle Bader"
 maintainer_email	"kyle.bader@dreamhost.com"

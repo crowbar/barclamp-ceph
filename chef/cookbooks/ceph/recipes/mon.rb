@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 # This recipe creates a monitor cluster
 #
 # You should never change the mon default path or
