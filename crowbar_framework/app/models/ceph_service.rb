@@ -25,6 +25,10 @@ class CephService < ServiceObject
     @logger.debug("Ceph create_proposal: entering")
     base = super
 
+    base["attributes"]["ceph"]["config"]["fsid"] = generate_uuid
+    base["attributes"]["ceph"]["monitor-secret"] = SecureRandom.base64(40)[-40,40]
+    base["attributes"]["ceph"]["admin-secret"] = SecureRandom.base64(40)[-40,40]
+
     nodes        = NodeObject.all
     nodes.delete_if { |n| n.nil? or n.admin? }
 
@@ -70,5 +74,12 @@ class CephService < ServiceObject
     validate_at_least_n_for_role proposal, "ceph-osd", 2
 
     super
+  end
+
+  def generate_uuid
+    ary = SecureRandom.random_bytes(16).unpack("NnnnnN")
+    ary[2] = (ary[2] & 0x0fff) | 0x4000
+    ary[3] = (ary[3] & 0x3fff) | 0x8000
+    "%08x-%04x-%04x-%04x-%04x%08x" % ary
   end
 end
