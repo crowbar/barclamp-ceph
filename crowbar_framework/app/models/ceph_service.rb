@@ -26,8 +26,8 @@ class CephService < ServiceObject
     base = super
 
     base["attributes"]["ceph"]["config"]["fsid"] = generate_uuid
-    base["attributes"]["ceph"]["monitor-secret"] = SecureRandom.base64(40)[-40,40]
-    base["attributes"]["ceph"]["admin-secret"] = SecureRandom.base64(40)[-40,40]
+    base["attributes"]["ceph"]["monitor-secret"] = `/bin/bash /opt/dell/bin/generate-secret.sh`
+    base["attributes"]["ceph"]["admin-secret"] = `/bin/bash /opt/dell/bin/generate-secret.sh`
 
     nodes        = NodeObject.all
     nodes.delete_if { |n| n.nil? or n.admin? }
