@@ -1,5 +1,5 @@
 unless node["roles"].include?("ceph-mon")
-  node["ceph"]["platform"]["mon"]["services"].each do |name|
+  node["ceph"]["services"]["mon"].each do |name|
     service name do
       action [:stop, :disable]
     end
