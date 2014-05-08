@@ -16,16 +16,12 @@
 #
 
 barclamp:
-  name: ceph
-  display: Ceph
-  description: Distributed object store and file system
+  name: 'ceph'
+  display: 'Ceph'
+  description: 'Distributed object store and file system'
   version: 0
   member:
-    - openstack
-  os_support:
-    - ubuntu-12.04
-    - centos-6.4
-    - redhat-6.4
+    - 'openstack'
 
 crowbar:
   layout: 1
@@ -36,41 +32,41 @@ crowbar:
 debs:
   ubuntu-12.04:
     repos:
-      - deb http://ceph.com/debian-dumpling precise main
-      - deb http://ceph.com/packages/ceph-extras/debian precise main
+      - 'deb http://ceph.com/debian-dumpling precise main'
+      - 'deb http://ceph.com/packages/ceph-extras/debian precise main'
   pkgs:
-    - ceph
-    - ceph-common
-    - ceph-test
-    - ceph-mds
-    - ceph-fs-common
-    - radosgw
-    - libcephfs1
-    - gdisk
-    - google-perftools
-    - libgoogle-perftools4
-    - libaio1
-    - libsnappy1
-    - libleveldb1
+    - 'ceph'
+    - 'ceph-common'
+    - 'ceph-test'
+    - 'ceph-mds'
+    - 'ceph-fs-common'
+    - 'radosgw'
+    - 'libcephfs1'
+    - 'gdisk'
+    - 'google-perftools'
+    - 'libgoogle-perftools4'
+    - 'libaio1'
+    - 'libsnappy1'
+    - 'libleveldb1'
 
 rpms:
   centos-6.4:
     repos:
-      - bare ceph-dumpling 10 http://ceph.com/rpm-dumpling/centos-6.4/x86_64/
-      - bare ceph-extras 2 http://ceph.com/packages/ceph-extras/rpm/centos-6.4/x86_64/
+      - 'bare ceph-dumpling 10 http://ceph.com/rpm-dumpling/centos-6.4/x86_64/'
+      - 'bare ceph-extras 2 http://ceph.com/packages/ceph-extras/rpm/centos-6.4/x86_64/'
   redhat-6.4:
     repos:
-      - bare ceph-dumpling 10 http://ceph.com/rpm-dumpling/rhel6.4/x86_64/
-      - bare ceph-extras 2 http://ceph.com/packages/ceph-extras/rpm/rhel6.4/x86_64/
+      - 'bare ceph-dumpling 10 http://ceph.com/rpm-dumpling/rhel6.4/x86_64/'
+      - 'bare ceph-extras 2 http://ceph.com/packages/ceph-extras/rpm/rhel6.4/x86_64/'
   pkgs:
-    - ceph
-    - ceph-debuginfo
-    - snappy
-    - leveldb
-    - gdisk
-    - python-argparse
-    - gperftools-libs
+    - 'ceph'
+    - 'ceph-debuginfo'
+    - 'snappy'
+    - 'leveldb'
+    - 'gdisk'
+    - 'python-argparse'
+    - 'gperftools-libs'
 
 gems:
   pkgs:
-    - open4
+    - 'open4'
