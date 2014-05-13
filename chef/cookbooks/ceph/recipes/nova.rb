@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 include_recipe "ceph::default"
 include_recipe "ceph::conf"
 

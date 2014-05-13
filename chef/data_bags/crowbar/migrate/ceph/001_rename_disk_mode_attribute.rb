@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 def upgrade ta, td, a, d
   a['disk_mode'] = a['disk-mode']
   a.delete('disk-mode')

@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 def upgrade ta, td, a, d
   a['disk-mode'] = ta['disk-mode'] || ta['disk_mode']
   a['config'] = ta['config']

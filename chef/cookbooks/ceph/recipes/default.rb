@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 #
 # Author:: Kyle Bader <kyle.bader@dreamhost.com>
 # Cookbook Name:: ceph

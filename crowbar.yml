@@ -1,15 +1,27 @@
+#
+# Copyright 2011-2013, Dell
+# Copyright 2013-2014, SUSE LINUX Products GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 barclamp:
-  name: ceph
-  display: Ceph
-  description: Distributed object store and file system
+  name: 'ceph'
+  display: 'Ceph'
+  description: 'Distributed object store and file system'
   version: 0
   member:
-    - openstack
-
-  os_support:
-    - ubuntu-12.04
-    - centos-6.4
-    - redhat-6.4
+    - 'openstack'
 
 crowbar:
   layout: 1
@@ -17,47 +29,44 @@ crowbar:
   run_order: 80
   chef_order: 80
 
-# TODO crowbar *and* chef cookbooks don't really need -dbg
 debs:
   ubuntu-12.04:
     repos:
-      - deb http://ceph.com/debian-dumpling precise main
-      - deb http://ceph.com/packages/ceph-extras/debian precise main
+      - 'deb http://ceph.com/debian-dumpling precise main'
+      - 'deb http://ceph.com/packages/ceph-extras/debian precise main'
   pkgs:
-    - ceph
-    - ceph-dbg
-    - ceph-common
-    - ceph-common-dbg
-    - ceph-test
-    - ceph-mds
-    - ceph-fs-common
-    - radosgw
-    - libcephfs1
-    - gdisk
-    - google-perftools
-    - libgoogle-perftools4
-    - libaio1
-    - libsnappy1
-    - libleveldb1
+    - 'ceph'
+    - 'ceph-common'
+    - 'ceph-test'
+    - 'ceph-mds'
+    - 'ceph-fs-common'
+    - 'radosgw'
+    - 'libcephfs1'
+    - 'gdisk'
+    - 'google-perftools'
+    - 'libgoogle-perftools4'
+    - 'libaio1'
+    - 'libsnappy1'
+    - 'libleveldb1'
 
 rpms:
   centos-6.4:
     repos:
-      - bare ceph-dumpling 10 http://ceph.com/rpm-dumpling/centos-6.4/x86_64/
-      - bare ceph-extras 2 http://ceph.com/packages/ceph-extras/rpm/centos-6.4/x86_64/
+      - 'bare ceph-dumpling 10 http://ceph.com/rpm-dumpling/centos-6.4/x86_64/'
+      - 'bare ceph-extras 2 http://ceph.com/packages/ceph-extras/rpm/centos-6.4/x86_64/'
   redhat-6.4:
     repos:
-      - bare ceph-dumpling 10 http://ceph.com/rpm-dumpling/rhel6.4/x86_64/
-      - bare ceph-extras 2 http://ceph.com/packages/ceph-extras/rpm/rhel6.4/x86_64/
+      - 'bare ceph-dumpling 10 http://ceph.com/rpm-dumpling/rhel6.4/x86_64/'
+      - 'bare ceph-extras 2 http://ceph.com/packages/ceph-extras/rpm/rhel6.4/x86_64/'
   pkgs:
-    - ceph
-    - ceph-debuginfo
-    - snappy
-    - leveldb
-    - gdisk
-    - python-argparse
-    - gperftools-libs
+    - 'ceph'
+    - 'ceph-debuginfo'
+    - 'snappy'
+    - 'leveldb'
+    - 'gdisk'
+    - 'python-argparse'
+    - 'gperftools-libs'
 
 gems:
   pkgs:
-    - open4
+    - 'open4'

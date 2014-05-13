@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 raise "fsid must be set in config" if node["ceph"]["config"]['fsid'].nil?
 
 mon_nodes = get_mon_nodes()
