@@ -126,3 +126,18 @@
   <% end %>
 
 <% end -%>
+
+<% if (@is_rgw) -%>
+[client.radosgw.<%= node['hostname'] %>]
+  host = <%= node['hostname'] %>
+  rgw socket path = /var/run/ceph-radosgw/radosgw.<%= node['hostname'] %>
+  pid file = /var/run/ceph-radosgw/$name.pid
+  keyring = /etc/ceph/ceph.client.radosgw.<%= node['hostname'] %>.keyring
+  log file = /var/log/ceph/radosgw.log
+  rgw print continue = false # should be disabled when not using modified fastcgi
+<% if (! node['ceph']['config']['rgw'].nil?) -%>
+  <% node['ceph']['config']['rgw'].sort.each do |k, v| %>
+  <%= k %> = <%= v %>
+  <% end %>
+<% end -%>
+<% end -%>

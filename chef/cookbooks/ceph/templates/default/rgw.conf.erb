@@ -1,0 +1,30 @@
+<VirtualHost <%= node['ceph']['radosgw']['rgw_addr'] %>>
+  ServerName <%= node['hostname'] %>
+<% if node['ceph']['radosgw']['api_aliases'] -%>
+<%   node['ceph']['radosgw']['api_aliases'].each do |api_alias| -%>
+  ServerAlias <%= api_alias %>
+<%   end -%>
+<% end -%>
+  ServerAdmin <%= node["ceph"]["radosgw"]["admin_email"] %>
+  DocumentRoot <%= node['ceph']['radosgw']['path'] %>
+
+  RewriteEngine On
+  RewriteRule ^/([a-zA-Z0-9-_.]*)([/]?.*) /s3gw.fcgi?page=$1&params=$2&%{QUERY_STRING} [E=HTTP_AUTHORIZATION:%{HTTP:Authorization},L]
+
+  <IfModule mod_fastcgi.c>
+    <Directory <%= node['ceph']['radosgw']['path'] %>>
+      Options +ExecCGI
+      AllowOverride All
+      SetHandler fastcgi-script
+      Order allow,deny
+      Allow from all
+      AuthBasicAuthoritative Off
+    </Directory>
+  </IfModule>
+
+  AllowEncodedSlashes On
+
+  ErrorLog /var/log/<%= node['apache']['package'] %>/error.log
+  CustomLog /var/log/<%= node['apache']['package'] %>/rgw-access.log proxy_combined
+  ServerSignature Off
+</VirtualHost>

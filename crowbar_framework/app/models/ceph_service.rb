@@ -34,6 +34,10 @@ class CephService < ServiceObject
         "ceph-osd" => {
           "unique" => false,
           "count" => 8
+        },
+        "ceph-radosgw" => {
+          "unique" => false,
+          "count" => 1
         }
       }
     end
@@ -65,6 +69,7 @@ class CephService < ServiceObject
     base["deployment"]["ceph"]["elements"] = {
         "ceph-mon" => controller_nodes.map { |x| x.name },
         "ceph-osd" => storage_nodes.map{ |x| x.name },
+        "ceph-radosgw" => [ controller_nodes.first.name ]
     } unless storage_nodes.nil?
 
     @logger.debug("Ceph create_proposal: exiting")
