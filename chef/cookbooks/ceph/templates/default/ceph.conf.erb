@@ -1,27 +1,27 @@
 [global]
-; enable secure authentication
+# enable secure authentication
 auth cluster required = cephx
 auth service required = cephx
 auth client required = cephx
 
-; allow ourselves to open a lot of files
+# allow ourselves to open a lot of files
 max open files = 131072
 
-; set log file
+# set log file
 log file = /var/log/ceph/$name.log
-; log_to_syslog = true        ; uncomment this line to log to syslog
+# log_to_syslog = true        # uncomment this line to log to syslog
 
-; set up pid files
+# set up pid files
 pid file = /var/run/ceph/$name.pid
 
-; provide the unique identifier for object store
+# provide the unique identifier for object store
 fsid =  <%= node["ceph"]["config"]["fsid"] %>
 
-; specify the initial monitors of the cluster in to establish a quorum
+# specify the initial monitors of the cluster in to establish a quorum
 mon initial members = <%= @mon_initial.join(' ') %>
 mon host = <%= @mon_addresses.join(', ') %>
 
-; configure a public and cluster network
+# configure a public and cluster network
 public network = <%= @public_network %>
 cluster network = <%= @cluster_network %>
 
@@ -47,25 +47,25 @@ osd crush chooseleaf type = <%= @osd_nodes_count > 1 ? 1 : 0 %>
   <% end -%>
 <% end -%>
 
-; monitors
-;  You need at least one.  You need at least three if you want to
-;  tolerate any node failures.  Always create an odd number.
+# monitors
+#  You need at least one.  You need at least three if you want to
+#  tolerate any node failures.  Always create an odd number.
 [mon]
 mon data = /var/lib/ceph/mon/ceph-$id
 
-; Timing is critical for monitors, but if you want to allow the clocks to drift a
-; bit more, you can specify the max drift.
-;mon clock drift allowed = 1
+# Timing is critical for monitors, but if you want to allow the clocks to drift a
+# bit more, you can specify the max drift.
+#mon clock drift allowed = 1
 
-; Tell the monitor to backoff from this warning for 30 seconds
-;mon clock drift warn backoff = 30
+# Tell the monitor to backoff from this warning for 30 seconds
+#mon clock drift warn backoff = 30
 
-; logging, for debugging monitor crashes, in order of
-; their likelihood of being helpful :)
-;debug ms = 1
-;debug mon = 20
-;debug paxos = 20
-;debug auth = 20
+# logging, for debugging monitor crashes, in order of
+# their likelihood of being helpful :)
+#debug ms = 1
+#debug mon = 20
+#debug paxos = 20
+#debug auth = 20
 
 <% if (! node['ceph']['config']['mon'].nil?) -%>
   <% node['ceph']['config']['mon'].each do |k, v| -%>
@@ -73,58 +73,58 @@ mon data = /var/lib/ceph/mon/ceph-$id
   <% end -%>
 <% end -%>
 
-; mds
-;  You need at least one.  Define two to get a standby.
+# mds
+#  You need at least one.  Define two to get a standby.
 [mds]
-; where the mds keeps it's secret encryption keys
+# where the mds keeps it's secret encryption keys
 keyring = /etc/ceph/$name.keyring
 
-; mds logging to debug issues.
-;debug ms = 1
-;debug mds = 20
+# mds logging to debug issues.
+#debug ms = 1
+#debug mds = 20
 
-; osd
-;  You need at least one.  Two if you want data to be replicated.
-;  Define as many as you like.
+# osd
+#  You need at least one.  Two if you want data to be replicated.
+#  Define as many as you like.
 [osd]
-; This is where the osd expects its data
+# This is where the osd expects its data
 osd data = /var/lib/ceph/osd/ceph-$id
 
-; Ideally, make the journal a separate disk or partition.
-; 1-10GB should be enough; more if you have fast or many
-; disks.  You can use a file under the osd data dir if need be
-; (e.g. /data/$name/journal), but it will be slower than a
-; separate disk or partition.
-; This is an example of a file-based journal.
+# Ideally, make the journal a separate disk or partition.
+# 1-10GB should be enough; more if you have fast or many
+# disks.  You can use a file under the osd data dir if need be
+# (e.g. /data/$name/journal), but it will be slower than a
+# separate disk or partition.
+# This is an example of a file-based journal.
 osd journal = /var/lib/ceph/osd/ceph-$id/journal
 osd journal size = 1000
 
-; If you want to run the journal on a tmpfs (don't), disable DirectIO
-;journal dio = false
+# If you want to run the journal on a tmpfs (don't), disable DirectIO
+#journal dio = false
 
-; You can change the number of recovery operations to speed up recovery
-; or slow it down if your machines can't handle it
-; osd recovery max active = 3
+# You can change the number of recovery operations to speed up recovery
+# or slow it down if your machines can't handle it
+# osd recovery max active = 3
 
-; osd logging to debug osd issues, in order of likelihood of being
-; helpful
-;debug ms = 1
-;debug osd = 20
-;debug filestore = 20
-;debug journal = 20
+# osd logging to debug osd issues, in order of likelihood of being
+# helpful
+#debug ms = 1
+#debug osd = 20
+#debug filestore = 20
+#debug journal = 20
 
 fstype = xfs
 
-; ### The below options only apply if you're using mkcephfs
-; ### and the devs options
-; The filesystem used on the volumes
+# ### The below options only apply if you're using mkcephfs
+# ### and the devs options
+# The filesystem used on the volumes
 osd mkfs type = xfs
-; If you want to specify some other mount options, you can do so.
-; for other filesystems use 'osd mount options $fstype'
+# If you want to specify some other mount options, you can do so.
+# for other filesystems use 'osd mount options $fstype'
 osd mount options xfs = rw,noatime,inode64,logbsize=256k,delaylog
-; The options used to format the filesystem via mkfs.$fstype
-; for other filesystems use 'osd mkfs options $fstype'
-; osd mkfs options btrfs =
+# The options used to format the filesystem via mkfs.$fstype
+# for other filesystems use 'osd mkfs options $fstype'
+# osd mkfs options btrfs =
 
 <% if (! node['ceph']['config']['osd'].nil?) -%>
   <% node['ceph']['config']['osd'].each do |k, v| -%>
