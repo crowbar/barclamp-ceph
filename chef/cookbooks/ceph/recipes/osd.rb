@@ -112,7 +112,7 @@ else
         end
         create_cmd = "ceph-disk prepare --cluster #{cluster} --zap-disk #{osd_device['device']}"
 
-        if %w(redhat centos).include? node.platform
+        if (%w(redhat centos).include? node.platform) || (%w(suse-11.3).include? node.target_platform)
           # redhat has buggy udev so we have to use workaround from ceph
           b_dev = osd_device['device'].gsub("/dev/", "")
           create_cmd = create_cmd + " && ceph-disk-udev 2 #{b_dev}2 #{b_dev} ; ceph-disk-udev 1 #{b_dev}1 #{b_dev}"
