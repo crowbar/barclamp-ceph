@@ -84,13 +84,14 @@ class CephService < PacemakerServiceObject
     base["attributes"][@bc_name]["keystone_instance"] = find_dep_proposal("keystone", true)
 
     nodes        = NodeObject.all
-    nodes.delete_if { |n| n.nil? or n.admin? }
+    nodes.delete_if { |n| n.nil? or n.admin? or
+                          (n.target_platform && n.target_platform != "suse-12.0") }
 
     storage_nodes = nodes.select { |n| n.intended_role == "storage" }
     controller_nodes = nodes.select { |n| n.intended_role == "controller"}
     if controller_nodes.size < 3
       controller_nodes = [ controller_nodes, storage_nodes, nodes ].flatten.uniq{|n| n.name}
-      controller_nodes = controller_nodes.take(3)
+      controller_nodes = controller_nodes.take(controller_nodes.length > 2 ? 3 : 1)
     end
 
     # Prefer non-storage/non-controller nodes for monitors
