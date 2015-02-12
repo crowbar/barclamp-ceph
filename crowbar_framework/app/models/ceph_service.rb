@@ -236,6 +236,18 @@ class CephService < PacemakerServiceObject
     end
   end
 
+  def validate_proposal proposal
+    super
+
+    osd_nodes = proposal["deployment"]["ceph"]["elements"]["ceph-osd"] || []
+
+    NodeObject.find("roles:ceph-osd").each do |n|
+      unless osd_nodes.include? n.name
+        validation_error "The ceph-osd role cannot be removed from node '#{n.name}'"
+      end
+    end
+  end
+
   def validate_proposal_after_save proposal
     validate_at_least_n_for_role proposal, "ceph-mon", 1
     validate_count_as_odd_for_role proposal, "ceph-mon"
@@ -244,12 +256,6 @@ class CephService < PacemakerServiceObject
     osd_nodes = proposal["deployment"]["ceph"]["elements"]["ceph-osd"] || []
     mon_nodes = proposal["deployment"]["ceph"]["elements"]["ceph-mon"] || []
     radosgw_nodes = proposal["deployment"]["ceph"]["elements"]["ceph-radosgw"] || []
-
-    NodeObject.find("roles:ceph-osd").each do |n|
-      unless osd_nodes.include? n.name
-        validation_error "The ceph-osd role cannot be removed from a node '#{n.name}'"
-      end
-    end
 
     unless radosgw_nodes.empty?
       ProposalObject.find_proposals("swift").each {|p|
