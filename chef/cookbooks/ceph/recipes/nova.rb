@@ -7,7 +7,6 @@ case node[:platform]
 when "suse"
   packages = %w{
       python-ceph
-      kvm-rbd-plugin
   }
 end
 
