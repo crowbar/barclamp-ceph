@@ -60,13 +60,17 @@ if cinder_controller.length > 0
         client_key = %x[ ceph auth get-key client.'#{nova_user}' ]
         raise 'getting nova client key failed' unless $?.exitstatus == 0
 
-        %x[ virsh secret-define --file '#{secret_file_path}' ]
-        raise 'generating secret file failed' unless $?.exitstatus == 0
+        # Just as a friendly reminder: It is okay that this command fails and
+        # spits an error message. The error message contains the info we're looking
+        # for
+        secret_out = %x[ LC_ALL=C virsh secret-define --file '#{secret_file_path}' 2>&1 ]
+        secret_uuid = secret_out[/(\S{8}-\S{4}-\S{4}-\S{4}-\S{12})/, 1]
 
-        %x[ virsh secret-set-value --secret '#{nova_uuid}' --base64 '#{client_key}' ]
-        raise 'importing secret file failed' unless $?.exitstatus == 0
+        unless secret_uuid.empty?
+          %x[ virsh secret-set-value --secret '#{secret_uuid}' --base64 '#{client_key}' ]
+          raise 'importing secret file failed' unless $?.exitstatus == 0
+        end
       end
-
     end
   end
 
