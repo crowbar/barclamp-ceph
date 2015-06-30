@@ -163,7 +163,7 @@ class CephService < PacemakerServiceObject
     # Make sure to use the storage network
     net_svc = NetworkService.new @logger
 
-    osd_nodes.each do |n|
+    all_nodes.each do |n|
       net_svc.allocate_ip "default", "storage", "host", n
     end
 
@@ -178,13 +178,16 @@ class CephService < PacemakerServiceObject
     # Save net info in attributes if we're applying
     unless all_nodes.empty?
       node = NodeObject.find_node_by_name osd_nodes[0]
-      admin_net = node.get_network_by_type("admin")
-      cluster_net = node.get_network_by_type("storage")
-
+      ceph_public_net = node.get_network_by_type("storage")
       role.default_attributes["ceph"]["config"]["public-network"] =
-        "#{admin_net['subnet']}/#{mask_to_bits(admin_net['netmask'])}"
+        "#{ceph_public_net['subnet']}/#{mask_to_bits(ceph_public_net['netmask'])}"
+
+      osd_nodes.each do |n|
+        net_svc.allocate_ip "default", "replication", "host", n
+      end
+      ceph_cluster_net = node.get_network_by_type("replication")
       role.default_attributes["ceph"]["config"]["cluster-network"] =
-        "#{cluster_net['subnet']}/#{mask_to_bits(cluster_net['netmask'])}"
+        "#{ceph_cluster_net['subnet']}/#{mask_to_bits(ceph_cluster_net['netmask'])}"
 
       role.save
     end

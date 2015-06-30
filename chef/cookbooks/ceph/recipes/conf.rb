@@ -75,8 +75,6 @@ template '/etc/ceph/ceph.conf' do
     :pool_size => rep_num,
     :pool_pg_num => pg_num,
     :osd_nodes_count => osd_nodes.length,
-    :public_network => node["ceph"]["config"]["public-network"],
-    :cluster_network => node["ceph"]["config"]["cluster-network"],
     :is_rgw => is_rgw,
     :keystone_settings => keystone_settings
   )
