@@ -23,8 +23,10 @@
         mon host = <%= @mon_addresses.join(', ') %>    
         
         ; configure a public and cluster network
-        public network = <%= @public_network %>
-        cluster network = <%= @cluster_network %>
+        public network = <%= node["ceph"]["config"]["public-network"] %>
+        <% unless node["ceph"]["config"]["cluster-network"].nil? -%>
+        cluster network = <%= node["ceph"]["config"]["cluster-network"] %>
+        <% end -%>
 
         ; replication level, number of data copies
         osd pool default size = <%= @pool_size %>
