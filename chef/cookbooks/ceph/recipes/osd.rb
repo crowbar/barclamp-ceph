@@ -69,7 +69,15 @@ else
   if is_crowbar?
     node.set["ceph"]["osd_devices"] = [] if node["ceph"]["osd_devices"].nil?
     min_size_blocks = node["ceph"]["osd"]["min_size_gb"] * 1024 * 1024 * 2
-    unclaimed_disks = BarclampLibrary::Barclamp::Inventory::Disk.unclaimed(node).sort.select {|d| d.size >= min_size_blocks}
+
+    claim_string = "Ceph"
+
+    # claim only disks with Ceph role; when there is none, take disks without role
+    ceph_disks, disks_without_role = BarclampLibrary::Barclamp::Inventory::Disk.prepared_for(node,claim_string)
+    unclaimed_disks = ceph_disks.empty? ? disks_without_role : ceph_disks
+    unclaimed_disks.sort.select! {|d|
+      d.size >= min_size_blocks
+    }
 
     # if devices for journal are explicitely listed, do not use automatic journal assigning to SSD
     if !node["ceph"]["osd"]["journal_devices"].empty?
@@ -107,7 +115,7 @@ else
 
     # Now, we have the final list of devices to claim, so claim them
     disk_list.select do |d|
-      if d.claim("Ceph")
+      if d.claim(claim_string)
         Chef::Log.info("Ceph: Claimed #{d.name}")
         device = {}
         dev_name = d.name.gsub("/dev/", "")
